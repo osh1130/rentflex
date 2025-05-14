@@ -1,10 +1,7 @@
-FROM node:18-alpine
+FROM node:18
 
 WORKDIR /app
-COPY mock/package.json ./
+COPY ./mock/package*.json ./
 RUN npm install
-
-COPY mock/ ./
-EXPOSE 8000
-
-CMD ["node", "mock-server.js"]
+COPY ./mock ./
+CMD ["npx", "nodemon", "mock-server.js"]

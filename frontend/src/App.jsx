@@ -1,32 +1,32 @@
-import { Routes, Route } from 'react-router-dom'
-import Navbar from './components/Navbar'
-import Home from './pages/Home'
-import Login from './pages/Login'
-import Register from './pages/Register'
-import VehicleList from './pages/VehicleList'
-import Booking from './pages/Booking'
-import Orders from './pages/Orders'
-import Profile from './pages/Profile'
-import AdminPanel from './pages/AdminPanel'
-import RequireAuth from './components/RequireAuth'
-import RequireAdmin from './components/RequireAdmin'
+import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { UserProvider } from './contexts/UserContext';
+import Navbar from './components/Navbar';
+import Home from './pages/Home';
+import VehicleDetail from './pages/VehicleDetail';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import AdminPage from './pages/AdminPage';
+import PrivateRoute from './components/PrivateRoute';
 
 export default function App() {
   return (
-    <div className="min-h-screen">
-      <Navbar />
-      <div className="container mx-auto p-6">
+    <UserProvider>
+      <BrowserRouter>
+        <Navbar />
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/vehicles" element={<Home />} />
+          <Route path="/vehicle/:id" element={<VehicleDetail />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/vehicles" element={<VehicleList />} />
-          <Route path="/booking/:id" element={<Booking />} />
-          <Route path="/orders" element={<Orders />} />
-          <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth> } />
-          <Route path="/admin" element={<RequireAdmin><AdminPanel /></RequireAdmin>} />
+          <Route path="/admin" element={
+            <PrivateRoute role="admin">
+              <AdminPage />
+            </PrivateRoute>
+          } />
         </Routes>
-      </div>
-    </div>
-  )
+      </BrowserRouter>
+    </UserProvider>
+  );
 }

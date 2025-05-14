@@ -6,9 +6,12 @@ services:
       context: .
       dockerfile: Dockerfile.frontend
     ports:
-      - "3000:80"
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
     depends_on:
-      - backend
+      - mock
 
   backend:
     build:
@@ -25,4 +28,7 @@ services:
       dockerfile: Dockerfile.mock
     ports:
       - "8001:8000"
+    volumes:
+    - ./mock:/app
+    - /app/node_modules
 
