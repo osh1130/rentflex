@@ -1,15 +1,16 @@
-# frontend/Dockerfile.frontend
 FROM node:18
 
+# 设置工作目录
 WORKDIR /app
-COPY frontend/package.json frontend/package-lock.json /app/
+
+# 先只复制 package.json & package-lock.json，加速依赖安装
+COPY package*.json ./
+
+# 在镜像里安装依赖（写到 volume 里）
 RUN npm install
-COPY frontend/ /app/
-RUN npm run build
 
-# Use nginx to serve built static files
-FROM nginx:alpine
-COPY --from=0 /app/dist /usr/share/nginx/html
+# 最后再复制源码（这样构建阶段也能做一次 build，但开发时用 dev）
+COPY . .
 
-COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
-EXPOSE 80
+# 默认启动命令（docker-compose command 会覆盖它）
+CMD ["npm", "run", "dev"]

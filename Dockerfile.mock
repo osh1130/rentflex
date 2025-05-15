@@ -1,11 +1,17 @@
-FROM node:18-alpine
+FROM node:18
 
 WORKDIR /app
-COPY mock/package.json ./
-RUN npm install
 
+# 复制 mock 依赖描述
+COPY mock/package*.json ./
+
+# 源代码全部复制
 COPY mock/ ./
-EXPOSE 8000
 
+<<<<<<< HEAD
 #CMD ["node", "mock-server.js"]
 CMD ["npm", "start"]
+=======
+# 让 docker-compose 的 command 来做 install
+CMD ["nodemon", "mock-server.js"]
+>>>>>>> 28f00b8c764713a3f85a902a43d072ace3078ce0

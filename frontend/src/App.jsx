@@ -1,3 +1,4 @@
+
 import { Routes, Route } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Home from './pages/Home'
@@ -10,13 +11,16 @@ import Profile from './pages/customer/Profile'
 import AdminPanel from './pages/admin/AdminPanel'
 
 
+
 export default function App() {
   return (
-    <div className="min-h-screen">
-      <Navbar />
-      <div className="container mx-auto p-6">
+    <UserProvider>
+      <BrowserRouter>
+        <Navbar />
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/vehicles" element={<Home />} />
+          <Route path="/vehicle/:id" element={<VehicleDetail />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/vehicles" element={<VehicleList />} />
@@ -25,7 +29,7 @@ export default function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/booking/:id" element={<Booking />} />
         </Routes>
-      </div>
-    </div>
-  )
+      </BrowserRouter>
+    </UserProvider>
+  );
 }
