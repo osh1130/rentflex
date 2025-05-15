@@ -1,6 +1,20 @@
-
+# Node.js dependencies
 node_modules/
+frontend/node_modules/
+mock/node_modules/
+
+# macOS
 .DS_Store
+
+# Vite
 dist/
-.env
+.vite/
+
+# VSCode
+.vscode/
+
+# Logs
+npm-debug.log*
+
+# Zips or local bundles
 *.zip
