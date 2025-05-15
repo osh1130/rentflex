@@ -1,6 +1,9 @@
 {
   "name": "rentflex-mock-api",
   "version": "1.0.0",
+  "scripts": {
+    "start": "node mock-server.js"
+  },
   "main": "mock-server.js",
   "dependencies": {
     "express": "^4.18.2",

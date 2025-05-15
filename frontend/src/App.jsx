@@ -3,13 +3,12 @@ import Navbar from './components/Navbar'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
-import VehicleList from './pages/VehicleList'
-import Booking from './pages/Booking'
-import Orders from './pages/Orders'
-import Profile from './pages/Profile'
-import AdminPanel from './pages/AdminPanel'
-import RequireAuth from './components/RequireAuth'
-import RequireAdmin from './components/RequireAdmin'
+import VehicleList from './pages/customer/VehicleList'
+import Booking from './pages/customer/Booking'
+import Orders from './pages/customer/Orders'
+import Profile from './pages/customer/Profile'
+import AdminPanel from './pages/admin/AdminPanel'
+
 
 export default function App() {
   return (
@@ -23,8 +22,8 @@ export default function App() {
           <Route path="/vehicles" element={<VehicleList />} />
           <Route path="/booking/:id" element={<Booking />} />
           <Route path="/orders" element={<Orders />} />
-          <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth> } />
-          <Route path="/admin" element={<RequireAdmin><AdminPanel /></RequireAdmin>} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/booking/:id" element={<Booking />} />
         </Routes>
       </div>
     </div>

@@ -7,4 +7,5 @@ RUN npm install
 COPY mock/ ./
 EXPOSE 8000
 
-CMD ["node", "mock-server.js"]
+#CMD ["node", "mock-server.js"]
+CMD ["npm", "start"]
