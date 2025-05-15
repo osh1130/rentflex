@@ -1,5 +1,5 @@
 {
-  "name": "rentflex-mock-api",
+  "name": "mock",
   "version": "1.0.0",
   "main": "mock-server.js",
   "dependencies": {

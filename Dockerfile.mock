@@ -1,7 +1,12 @@
 FROM node:18
 
 WORKDIR /app
-COPY ./mock/package*.json ./
-RUN npm install
-COPY ./mock ./
-CMD ["npx", "nodemon", "mock-server.js"]
+
+# 复制 mock 依赖描述
+COPY mock/package*.json ./
+
+# 源代码全部复制
+COPY mock/ ./
+
+# 让 docker-compose 的 command 来做 install
+CMD ["nodemon", "mock-server.js"]
