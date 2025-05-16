@@ -22,8 +22,9 @@ services:
       - "8001:8000"
     volumes:
       - ./mock:/app
-    command: sh -c "npm install && nodemon mock-server.js"
 
+volumes:
+  frontend_node_modules:
 
   # backend:
   #   build:

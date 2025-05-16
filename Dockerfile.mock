@@ -2,16 +2,15 @@ FROM node:18
 
 WORKDIR /app
 
-# 复制 mock 依赖描述
+# 复制依赖描述文件
 COPY mock/package*.json ./
 
-# 源代码全部复制
+# 安装依赖（如果你需要 nodemon，记得安装）
+RUN npm install
+
+# 拷贝所有 mock 源码
 COPY mock/ ./
 
-<<<<<<< HEAD
-#CMD ["node", "mock-server.js"]
+# 使用 node 启动 mock 服务
 CMD ["npm", "start"]
-=======
-# 让 docker-compose 的 command 来做 install
-CMD ["nodemon", "mock-server.js"]
->>>>>>> 28f00b8c764713a3f85a902a43d072ace3078ce0
+

@@ -1,16 +1,15 @@
 FROM node:18
 
-# 设置工作目录
 WORKDIR /app
 
-# 先只复制 package.json & package-lock.json，加速依赖安装
-COPY package*.json ./
+# 复制依赖描述文件
+COPY frontend/package*.json ./
 
-# 在镜像里安装依赖（写到 volume 里）
+# 安装依赖（包含 vite）
 RUN npm install
 
-# 最后再复制源码（这样构建阶段也能做一次 build，但开发时用 dev）
-COPY . .
+# 拷贝前端所有源码进去
+COPY frontend/ ./
 
-# 默认启动命令（docker-compose command 会覆盖它）
+# 启动 vite 开发服务
 CMD ["npm", "run", "dev"]
