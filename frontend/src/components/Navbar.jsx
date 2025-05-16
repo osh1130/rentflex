@@ -18,8 +18,7 @@ export default function Navbar() {
         <Link to="/" className="text-2xl font-bold text-primary">RentFlex</Link>
 
         <div className="space-x-4">
-          <Link to="/vehicles" className="hover:text-primary">Vehicles</Link>
-
+          
           {!user && (
             <>
               <Link to="/login" className="hover:text-primary">Login</Link>
@@ -29,6 +28,7 @@ export default function Navbar() {
 
           {user?.role === 'customer' && (
             <>
+              <Link to="/vehicles" className="hover:text-primary">Vehicles</Link>
               <Link to="/orders" className="hover:text-primary">My Orders</Link>
               <Link to="/profile" className="hover:text-primary">Profile</Link>
               <button onClick={handleLogout} className="hover:text-primary">Logout</button>
@@ -37,7 +37,9 @@ export default function Navbar() {
 
           {user?.role === 'admin' && (
             <>
-              <Link to="/admin" className="hover:text-primary">Admin</Link>
+              <Link to="/admin/vehicles" className="hover:text-primary">Vehicles</Link>
+              <Link to="/admin/orders" className="hover:text-primary">Approve Orders</Link>
+              <Link to="/admin/users" className="hover:text-primary">Manage Users</Link>
               <Link to="/profile" className="hover:text-primary">Profile</Link>
               <button onClick={handleLogout} className="hover:text-primary">Logout</button>
             </>

@@ -8,9 +8,12 @@ app.use(express.json())
 
 // 假用户列表（模拟数据库）
 const users = [
-  { email: 'admin@example.com', password: 'admin123', role: 'admin', name: 'Admin' },
-  { email: 'customer@example.com', password: 'cust123', role: 'customer', name: 'Customer' }
-]
+  { id: 1, email: 'admin@example.com', password: 'admin123', role: 'admin', name: 'Admin' },
+  { id: 2, email: 'customer1@example.com', password: 'cust123', role: 'customer', name: 'Customer1' },
+  { id: 3, email: 'customer2@example.com', password: 'cust123', role: 'customer', name: 'Customer2' },
+  { id: 4, email: 'customer3@example.com', password: 'cust123', role: 'customer', name: 'Customer3' }
+];
+
 
 // 通用中间件：身份验证
 function authMiddleware(req, res, next) {
@@ -150,6 +153,31 @@ app.delete('/api/admin/vehicles/:id', authMiddleware, adminOnly, (req, res) => {
   res.json({ message: 'Vehicle deleted' })
 })
 
+// 列表：获取所有用户（不含密码）
+app.get('/api/admin/users', authMiddleware, adminOnly, (req, res) => {
+  const list = users.map(({ password, ...rest }) => rest);
+  res.json(list);
+});
+
+
+// Block user
+app.post('/api/admin/users/:id/block', authMiddleware, adminOnly, (req, res) => {
+  const id = +req.params.id;
+  const target = users.find(u => u.id === id);
+  if (!target) return res.status(404).json({ message: 'User not found' });
+  target.blocked = true;
+  res.json({ ...target, password: undefined });
+});
+
+// Reset password
+app.post('/api/admin/users/:id/reset-password', authMiddleware, adminOnly, (req, res) => {
+  const id = +req.params.id;
+  const target = users.find(u => u.id === id);
+  if (!target) return res.status(404).json({ message: 'User not found' });
+  const newPass = 'tempPwd123';
+  target.password = newPass;
+  res.json({ message: 'Password reset', tempPassword: newPass });
+});
 
 
 // 创建预订
@@ -200,21 +228,34 @@ app.delete('/api/bookings/:id', (req, res) => {
   res.json({ message: 'Booking cancelled' })
 })
 
-app.get('/api/admin/bookings', (req, res) => {
-  res.json(bookings)
-})
 
-app.put('/api/admin/bookings/:id/approve', (req, res) => {
-  const id = parseInt(req.params.id)
-  bookings = bookings.map(b => b.id === id ? { ...b, status: 'approved' } : b)
-  res.json({ message: 'Approved' })
-})
+app.get('/api/admin/bookings', authMiddleware, adminOnly, (req, res) => {
+  const enriched = bookings.map(b => {
+    const userObj = users.find(u => u.email === b.user);
+    const vehicleObj = vehicles.find(v => v.id === b.vehicleId);
+    console.log('Booking:', b, 'User:', userObj, 'Vehicle:', vehicleObj);
+    return {
+      ...b,
+      user: userObj || { name: 'Unknown User' },
+      vehicle: vehicleObj || { name: 'Unknown Vehicle' }
+    };
+  });
+  res.json(enriched);
+});
 
-app.put('/api/admin/bookings/:id/reject', (req, res) => {
-  const id = parseInt(req.params.id)
-  bookings = bookings.map(b => b.id === id ? { ...b, status: 'rejected' } : b)
-  res.json({ message: 'Rejected' })
-})
+
+app.post('/api/admin/bookings/:id/approve', authMiddleware, adminOnly, (req, res) => {
+  const id = parseInt(req.params.id);
+  bookings = bookings.map(b => b.id === id ? { ...b, status: 'approved' } : b);
+  res.json({ message: 'Approved' });
+});
+
+app.post('/api/admin/bookings/:id/reject', authMiddleware, adminOnly, (req, res) => {
+  const id = parseInt(req.params.id);
+  bookings = bookings.map(b => b.id === id ? { ...b, status: 'rejected' } : b);
+  res.json({ message: 'Rejected' });
+});
+
 
 // 启动
 app.listen(8000, () => console.log('🚀 Mock API running at http://localhost:8000'))

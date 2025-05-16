@@ -1,8 +1,8 @@
 
 import { useState, useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { login } from '../api/auth'
-import { UserContext } from '../contexts/UserContext'
+import { login } from '../../api/auth'
+import { UserContext } from '../../contexts/UserContext'
 
 export default function Login() {
   const { setUser } = useContext(UserContext)
@@ -22,7 +22,7 @@ export default function Login() {
       setUser({ email: res.email, name: res.name, role: res.role })
       // 跳转到对应页面
       if (res.role === 'admin') {
-        navigate('/admin')
+        navigate('/admin/vehicles')
       } else {
         navigate('/vehicles')
       }

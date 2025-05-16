@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { useParams } from 'react-router-dom';
-import api from '../api/api';
-import BookingDatePicker from '../components/BookingDatePicker';
-import { UserContext } from '../contexts/UserContext';
+import api from '../../api/api';
+import BookingDatePicker from '../../components/BookingDatePicker';
+import { UserContext } from '../../contexts/UserContext';
 
 export default function VehicleDetail() {
   const { id } = useParams();

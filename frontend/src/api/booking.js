@@ -29,3 +29,34 @@ export const cancelBooking = async (bookingId, token) => {
   })
   return res.data
 }
+
+
+// ———— 管理员侧接口 ————
+
+// 获取所有订单（审批列表）
+export const getAllBookings = async (token) => {
+  const res = await api.get('/admin/bookings', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.data;
+};
+
+// 批准订单
+export const approveBooking = async (bookingId, token) => {
+  const res = await api.post(
+    `/admin/bookings/${bookingId}/approve`,
+    null,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  return res.data;
+};
+
+// 拒绝订单
+export const rejectBooking = async (bookingId, token) => {
+  const res = await api.post(
+    `/admin/bookings/${bookingId}/reject`,
+    null,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  return res.data;
+};
