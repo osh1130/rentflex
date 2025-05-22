@@ -32,6 +32,8 @@ class Vehicle(Base):
     maximum_rent_period = Column(Integer, nullable=False)
     seats = Column(Integer, nullable=False)
     price_per_day = Column(Float, nullable=False)
+    image_url = Column(String(255), nullable=True)  # 新增图片字段
+
 
     bookings = relationship("Booking", back_populates="vehicle")
 

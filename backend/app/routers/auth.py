@@ -7,7 +7,9 @@ from app.models import User, UserRole
 from app.schemas.user import UserCreate, UserLogin, UserResponse, Token
 from app.utils import hash_password, verify_password, create_access_token
 
-router = APIRouter()
+router = APIRouter(
+    tags=["Auth"]
+)
 common_error_responses = {
     401: {"description": "Unauthorized"},
     403: {"description": "Forbidden"},
