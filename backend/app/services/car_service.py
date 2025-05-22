@@ -1,5 +1,5 @@
-from models.car_model import Car
-from schemas.car_schema import CarCreate
+from backend.app.models import Car
+from backend.app.schemas.user import CarCreate
 from sqlalchemy.orm import Session
 
 class CarService:

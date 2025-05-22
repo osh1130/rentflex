@@ -1,0 +1,605 @@
+openapi: 3.0.0
+info:
+  title: Car Rental API
+  version: 1.0.0
+  description: Complete API spec with tags for module classification
+
+servers:
+  - url: http://localhost:8000
+
+tags:
+  - name: Auth
+    description: User authentication and registration
+  - name: Vehicles
+    description: Vehicle management and listings
+  - name: Bookings
+    description: Booking management for customers
+  - name: AdminBookings
+    description: Booking management for administrators
+  - name: Users
+    description: User management and admin actions
+  - name: Payments
+    description: Payment processing
+  - name: Notifications
+    description: User notifications
+
+paths:
+  /api/login:
+    post:
+      tags:
+        - Auth
+      summary: User login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Invalid credentials
+
+  /api/register:
+    post:
+      tags:
+        - Auth
+      summary: User registration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: User registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '409':
+          description: User already exists
+
+  /api/vehicles:
+    get:
+      tags:
+        - Vehicles
+      summary: Get available vehicles
+      parameters:
+        - name: start
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: end
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: List of vehicles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Vehicle'
+
+  /api/admin/vehicles:
+    get:
+      tags:
+        - Vehicles
+      summary: Admin get all vehicles
+      responses:
+        '200':
+          description: List of all vehicles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Vehicle'
+
+    post:
+      tags:
+        - Vehicles
+      summary: Admin add vehicle
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleCreate'
+      responses:
+        '201':
+          description: Vehicle created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehicle'
+
+  /api/admin/vehicles/{id}:
+    put:
+      tags:
+        - Vehicles
+      summary: Admin update vehicle
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleUpdate'
+      responses:
+        '200':
+          description: Vehicle updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vehicle'
+        '404':
+          description: Vehicle not found
+
+    delete:
+      tags:
+        - Vehicles
+      summary: Admin delete vehicle
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Vehicle deleted
+        '404':
+          description: Vehicle not found
+
+  /api/bookings:
+    post:
+      tags:
+        - Bookings
+      summary: Create a booking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingCreate'
+      responses:
+        '201':
+          description: Booking created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+        '400':
+          description: Invalid input or unavailable vehicle
+
+    get:
+      tags:
+        - Bookings
+      summary: Get current user's bookings
+      responses:
+        '200':
+          description: List of bookings for the user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Booking'
+
+  /api/bookings/{id}:
+    delete:
+      tags:
+        - Bookings
+      summary: Cancel a booking
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Booking cancelled
+        '404':
+          description: Booking not found
+        '403':
+          description: Forbidden, not owner or not cancellable
+
+  /api/admin/bookings:
+    get:
+      tags:
+        - AdminBookings
+      summary: Admin get all bookings
+      responses:
+        '200':
+          description: List of all bookings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Booking'
+
+  /api/admin/bookings/{id}/approve:
+    post:
+      tags:
+        - AdminBookings
+      summary: Approve booking
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Booking approved
+        '404':
+          description: Booking not found
+
+  /api/admin/bookings/{id}/reject:
+    post:
+      tags:
+        - AdminBookings
+      summary: Reject booking
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Booking rejected
+        '404':
+          description: Booking not found
+
+  /api/admin/users:
+    get:
+      tags:
+        - Users
+      summary: Admin get all users
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+
+  /api/admin/users/{id}/block:
+    post:
+      tags:
+        - Users
+      summary: Admin block user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: User blocked
+        '404':
+          description: User not found
+
+  /api/admin/users/{id}/reset-password:
+    post:
+      tags:
+        - Users
+      summary: Admin reset user password
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newPassword:
+                  type: string
+              required:
+                - newPassword
+      responses:
+        '200':
+          description: Password reset
+        '404':
+          description: User not found
+
+  /api/payments:
+    post:
+      tags:
+        - Payments
+      summary: Make a payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+      responses:
+        '200':
+          description: Payment successful
+        '400':
+          description: Payment failed or invalid data
+
+  /api/notifications:
+    get:
+      tags:
+        - Notifications
+      summary: Get notifications for user
+      responses:
+        '200':
+          description: List of notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Notification'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          example: admin@example.com
+        password:
+          type: string
+          format: password
+          example: admin123
+      required:
+        - email
+        - password
+
+    LoginResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: JWT access token
+        tokenType:
+          type: string
+          example: Bearer
+
+    RegisterRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+        name:
+          type: string
+      required:
+        - email
+        - password
+        - name
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        name:
+          type: string
+          example: John Doe
+        role:
+          type: string
+          enum: [customer, admin]
+          example: customer
+        blocked:
+          type: boolean
+          example: false
+
+    Vehicle:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 101
+        make:
+          type: string
+          example: Toyota
+        model:
+          type: string
+          example: Corolla
+        year:
+          type: integer
+          example: 2022
+        mileage:
+          type: integer
+          example: 25000
+        availableNow:
+          type: boolean
+          example: true
+        minimumRentPeriod:
+          type: integer
+          description: Minimum rent period in days
+          example: 1
+        maximumRentPeriod:
+          type: integer
+          description: Maximum rent period in days
+          example: 30
+        seats:
+          type: integer
+          example: 5
+        pricePerDay:
+          type: number
+          format: float
+          example: 55.0
+
+    VehicleCreate:
+      type: object
+      properties:
+        make:
+          type: string
+        model:
+          type: string
+        year:
+          type: integer
+        mileage:
+          type: integer
+        availableNow:
+          type: boolean
+        minimumRentPeriod:
+          type: integer
+        maximumRentPeriod:
+          type: integer
+        seats:
+          type: integer
+        pricePerDay:
+          type: number
+          format: float
+      required:
+        - make
+        - model
+        - year
+        - mileage
+        - availableNow
+        - minimumRentPeriod
+        - maximumRentPeriod
+        - seats
+        - pricePerDay
+
+    VehicleUpdate:
+      type: object
+      properties:
+        make:
+          type: string
+        model:
+          type: string
+        year:
+          type: integer
+        mileage:
+          type: integer
+        availableNow:
+          type: boolean
+        minimumRentPeriod:
+          type: integer
+        maximumRentPeriod:
+          type: integer
+        seats:
+          type: integer
+        pricePerDay:
+          type: number
+          format: float
+
+    BookingCreate:
+      type: object
+      properties:
+        vehicleId:
+          type: integer
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+      required:
+        - vehicleId
+        - startDate
+        - endDate
+
+    Booking:
+      type: object
+      properties:
+        id:
+          type: integer
+        vehicle:
+          $ref: '#/components/schemas/Vehicle'
+        user:
+          $ref: '#/components/schemas/User'
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        status:
+          type: string
+          enum: [pending, approved, rejected, cancelled]
+          example: pending
+
+    PaymentRequest:
+      type: object
+      properties:
+        bookingId:
+          type: integer
+        amount:
+          type: number
+          format: float
+        paymentMethod:
+          type: string
+          enum: [credit_card, debit_card, paypal]
+        cardNumber:
+          type: string
+          description: Required if paymentMethod is credit_card or debit_card
+        cardExpiry:
+          type: string
+          description: MM/YY format
+        cardCVC:
+          type: string
+          description: Card security code
+      required:
+        - bookingId
+        - amount
+        - paymentMethod
+
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        message:
+          type: string
+        read:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time

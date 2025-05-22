@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
-from schemas.car_schema import CarCreate, CarRead
+from backend.app.schemas.user import CarCreate, CarRead
 from services.car_service import CarService
 
 class CarController:

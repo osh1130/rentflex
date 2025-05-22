@@ -1,38 +1,37 @@
 version: '3.9'
 
 services:
-  frontend:
+#   frontend:
+#     build:
+#       context: .
+#       dockerfile: Dockerfile.frontend
+#     ports:
+#       - "3000:3000"
+#     volumes:
+#       - ./frontend:/app
+#     command: npm run dev
+#     depends_on:
+#       - mock
+
+#   mock:
+#     build:
+#       context: .
+#       dockerfile: Dockerfile.mock
+#     ports:
+#       - "8001:8000"
+#     volumes:
+#       - ./mock:/app
+
+
+
+  backend:
     build:
       context: .
-      dockerfile: Dockerfile.frontend
+      dockerfile: backend/Dockerfile.backend
     ports:
-      - "3000:3000"
+      - "8000:8000"
     volumes:
-      - ./frontend:/app
-      - frontend_node_modules:/app/node_modules
-    command: npm run dev
-    depends_on:
-      - mock
-
-  mock:
-    build:
-      context: .
-      dockerfile: Dockerfile.mock
-    ports:
-      - "8001:8000"
-    volumes:
-      - ./mock:/app
-
-volumes:
-  frontend_node_modules:
-
-  # backend:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile.backend
-  #   ports:
-  #     - "8000:8000"
-  #   volumes:
-  #     - ./backend:/app
-
+      - ./backend:/app         # 本地 backend 代码挂载到容器 /app，支持热重载
+      - /app/__pycache__      # 避免缓存问题
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 

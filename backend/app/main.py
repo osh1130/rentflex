@@ -1,10 +1,14 @@
 from fastapi import FastAPI
-from controllers.car_controller import CarController
-from database import engine, Base
+from app.database import engine, Base
+from app.routers import vehicles  
+from app.routers import auth 
 
 app = FastAPI()
 
-Base.metadata.create_all(bind=engine)
+@app.on_event("startup")
+async def startup_event():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
 
-car_controller = CarController()
-app.include_router(car_controller.router, prefix="/api")
+app.include_router(vehicles.router, prefix="/api")
+app.include_router(auth.router, prefix="/api/auth")
