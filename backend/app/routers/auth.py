@@ -58,5 +58,5 @@ async def login(user_in: UserLogin, session: AsyncSession = Depends(get_session)
     if user.blocked:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "User blocked")
 
-    token = create_access_token({"sub": user.email, "role": user.role.value})
+    token = create_access_token({"sub": str(user.id), "role": user.role.value})
     return {"access_token": token, "token_type": "bearer"}

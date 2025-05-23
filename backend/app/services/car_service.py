@@ -1,16 +1,37 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from ..models import Vehicle
+from ..models import Booking, BookingStatus, Vehicle
 from ..schemas.vehicle import VehicleCreate, VehicleUpdate
+from fastapi import HTTPException
+from sqlalchemy import not_, or_, and_, select
 
 async def get_available_vehicles(session: AsyncSession, start_date, end_date):
     # 计算租期天数
     days = (end_date - start_date).days
 
-    # 查询当前可用的车辆
-    result = await session.execute(
-        select(Vehicle).where(Vehicle.available_now == True)
+    # # 查询当前可用的车辆
+    # result = await session.execute(
+    #     select(Vehicle).where(Vehicle.available_now == True)
+    # )
+    # vehicles = result.scalars().all()
+    query = select(Vehicle).where(
+    Vehicle.available_now == True,  # 车辆本身必须“可租”
+        not_(
+            # 不存在任何与所查时间段冲突的booking
+            select(Booking)
+            .where(
+                Booking.vehicle_id == Vehicle.id,
+                Booking.status == BookingStatus.approved,
+                or_(
+                    and_(
+                        Booking.start_date <= end_date,
+                        Booking.end_date >= start_date
+                    )
+                )
+            ).exists()
+        )
     )
+    result = await session.execute(query)
     vehicles = result.scalars().all()
 
     # 过滤可租天数范围
@@ -30,6 +51,26 @@ async def get_all_vehicles(session: AsyncSession):
     return result.scalars().all()
 
 async def create_vehicle(session: AsyncSession, vehicle: VehicleCreate):
+    # Debug
+    print(
+        vehicle.make, vehicle.model, vehicle.year, vehicle.mileage,
+        vehicle.available_now, type(vehicle.available_now)
+    )
+    # 查重
+    result = await session.execute(
+        select(Vehicle).where(
+        and_(
+            Vehicle.make == vehicle.make,
+            Vehicle.model == vehicle.model,
+            Vehicle.year == vehicle.year,
+            Vehicle.mileage == vehicle.mileage,
+        )
+    ))
+    existing = result.scalar_one_or_none()
+    if existing:
+        raise HTTPException(status_code=400, detail="Vehicle already exists with the same parameters")
+
+    # 不存在才插入
     db_vehicle = Vehicle(
         make=vehicle.make,
         model=vehicle.model,

@@ -1,5 +1,5 @@
 from typing import Optional
-from pydantic import BaseModel, EmailStr, model_validator, validator
+from pydantic import BaseModel, EmailStr, model_validator, field_validator
 import enum
 
 class UserRole(str, enum.Enum):
@@ -15,19 +15,22 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     password: str
 
-    @validator('email', pre=True, always=True)
+    @field_validator('email', mode="before")
+    @classmethod
     def email_required(cls, v):
         if v is None or v == "":
             raise ValueError("email field required")
         return v
 
-    @validator('password', pre=True, always=True)
+    @field_validator('password', mode="before")
+    @classmethod
     def password_required(cls, v):
         if v is None or v == "":
             raise ValueError("password field required")
         return v
     
-    @validator("password")
+    @field_validator("password")
+    @classmethod
     def check_password(cls, v):
         if len(v) < 6:
             raise ValueError("password too short")
@@ -41,16 +44,16 @@ class UserLogin(BaseModel):
     password: str
 
     @model_validator(mode="after")
-    def check_required_fields(cls, values):
-        if not values.email and not values.name:
+    def check_required_fields(self):
+        if not self.email and not self.name:
             raise ValueError("Either email or name must be provided")
-        return values
+        return self
 
 class UserResponse(UserBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True  # v2必须写这个
 
 class Token(BaseModel):
     access_token: str
