@@ -1,8 +1,13 @@
+import os
+from dotenv import load_dotenv
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-# 替换用户名密码及数据库名
-DATABASE_URL = "mysql+aiomysql://root:Ohsehun19981130!@localhost:3306/rentflexdb"
+# 加载 .env 文件
+load_dotenv()
+
+# 从环境变量中读取数据库 URL
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 engine = create_async_engine(DATABASE_URL, echo=True)
 
