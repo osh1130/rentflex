@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from app.database import engine, Base
-from app.routers import vehicles, auth ,booking
+from app.routers import vehicles, auth ,booking, admin_booking
 
 
 app = FastAPI()
@@ -13,4 +13,5 @@ async def startup_event():
 app.include_router(auth.router, prefix="/api")
 app.include_router(vehicles.router, prefix="/api")
 app.include_router(booking.router, prefix="/api")
+app.include_router(admin_booking.router, prefix="/api")
 

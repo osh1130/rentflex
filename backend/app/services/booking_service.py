@@ -6,6 +6,7 @@ from ..models import Booking, Vehicle, BookingStatus
 from ..schemas.booking import BookingCreate, BookingOut
 from sqlalchemy.orm import selectinload
 
+
 async def create_booking(session: AsyncSession, user_id: int, booking_in: BookingCreate):
     # 检查车辆是否存在且可用
     vehicle = await session.get(Vehicle, booking_in.vehicle_id)

@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .database import get_session
 from .models import User
 from .utils import decode_access_token
+from .models import UserRole
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/login")
 
@@ -41,7 +42,8 @@ async def get_current_active_user(
     return user  
 
 def get_admin_user(current_user=Depends(get_current_active_user)):
-    if current_user.get("role") != "admin":
+    #print("当前用户信息:", vars(current_user))
+    if current_user.role != UserRole.admin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You are not admin",
