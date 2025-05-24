@@ -5,6 +5,8 @@ from ..database import get_session
 from ..deps import get_current_active_user
 from ..schemas.booking import BookingCreate, BookingOut
 from ..services.booking_service import create_booking, get_user_bookings, cancel_booking
+from ..schemas.BookingCalculate import (BookingCalculationRequest, BookingCalculationResult,)
+from ..services.calculate_booking_fee import calculate_booking_fee
 
 router = APIRouter(prefix="/bookings", tags=["Bookings"])
 
@@ -58,3 +60,11 @@ async def api_cancel_booking(
 ):
     await cancel_booking(session, current_user.id, id)
     return None  # 204 No Content
+
+
+@router.post("/calculate", response_model=BookingCalculationResult)
+async def calculate_booking(
+    req: BookingCalculationRequest,
+    session: AsyncSession = Depends(get_session),
+):
+    return await calculate_booking_fee(session, req)

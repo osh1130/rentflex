@@ -1,7 +1,8 @@
-from sqlalchemy import Column, Integer, String, Boolean, Float, Date, ForeignKey, Enum
+from sqlalchemy import Column, Integer, String, Boolean, Float, Date, ForeignKey, Enum, Table
 from sqlalchemy.orm import relationship
 from .database import Base
 import enum
+from sqlalchemy import UniqueConstraint
 
 class UserRole(enum.Enum):
     admin = "admin"
@@ -43,6 +44,15 @@ class BookingStatus(enum.Enum):
     rejected = "rejected"
     cancelled = "cancelled"
 
+booking_extras = Table(
+    "booking_extras",
+    Base.metadata,
+    Column("booking_id", Integer, ForeignKey("bookings.id"), primary_key=True),
+    Column("extra_id", Integer, ForeignKey("extras.id"), primary_key=True),
+    Column("fee", Float),  # 冗余存下单时的服务费，选填
+    UniqueConstraint("booking_id", "extra_id", name="uq_booking_extra")
+)
+
 class Booking(Base):
     __tablename__ = "bookings"
 
@@ -55,3 +65,26 @@ class Booking(Base):
 
     user = relationship("User", back_populates="bookings")
     vehicle = relationship("Vehicle", back_populates="bookings")
+    extras = relationship(
+        "Extra",
+        secondary=booking_extras,
+        back_populates="bookings"
+    )
+
+
+
+class Extra(Base):
+    __tablename__ = "extras"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(50), unique=True, nullable=False, index=True)
+    description = Column(String(255))
+    fee = Column(Float, nullable=False)
+    active = Column(Boolean, default=True)
+
+    bookings = relationship(
+        "Booking",
+        secondary=booking_extras,
+        back_populates="extras"
+    )
+

@@ -1,8 +1,13 @@
+from sqlalchemy import join
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.exc import NoResultFound
 from fastapi import HTTPException, status
-from ..models import Booking, Vehicle, BookingStatus
+
+from ..schemas.BookingCalculate import BookingCalculationRequest
+
+from ..services.calculate_booking_fee import calculate_booking_fee
+from ..models import Booking, Extra, Vehicle, BookingStatus, booking_extras
 from ..schemas.booking import BookingCreate, BookingOut
 from sqlalchemy.orm import selectinload
 
@@ -29,7 +34,16 @@ async def create_booking(session: AsyncSession, user_id: int, booking_in: Bookin
     conflict = result.scalars().first()
     if conflict:
         raise HTTPException(status_code=400, detail="Vehicle is already booked for the selected dates")
-    # 创建
+    
+    # 1. 查 extras
+    extras_objs = []
+    if booking_in.extras:
+        result = await session.execute(
+            select(Extra).where(Extra.id.in_(booking_in.extras), Extra.active == True)
+        )
+        extras_objs = result.scalars().all()
+
+    # 2. 创建
     booking = Booking(
         user_id=user_id,
         vehicle_id=booking_in.vehicle_id,
@@ -37,19 +51,56 @@ async def create_booking(session: AsyncSession, user_id: int, booking_in: Bookin
         end_date=booking_in.end_date,
         status=BookingStatus.pending,
     )
+    
     session.add(booking)
-    await session.commit()
-    await session.refresh(booking)
-    result = await session.execute(
-        select(Booking)
-        .options(
-            selectinload(Booking.vehicle),
-            selectinload(Booking.user)
+    await session.flush()  # 确保 booking.id 可用
+
+    # 3. 写入多对多快照 book_extras
+    for extra in extras_objs:
+        await session.execute(
+            booking_extras.insert().values(
+                booking_id=booking.id,
+                extra_id=extra.id,
+                fee=extra.fee
+            )
         )
-        .where(Booking.id == booking.id)
+    await session.commit()
+
+    # 4. 查询 booking_extras join extras
+    stmt = (
+        select(Extra.id, Extra.name, booking_extras.c.fee)
+        .select_from(
+            join(booking_extras, Extra, booking_extras.c.extra_id == Extra.id)
+        )
+        .where(booking_extras.c.booking_id == booking.id)
     )
-    booking_full = result.scalar_one()
-    return BookingOut.model_validate(booking_full)
+    result = await session.execute(stmt)
+    fee_result = await calculate_booking_fee(session, BookingCalculationRequest(
+        vehicle_id=booking.vehicle_id,
+        start_date=booking.start_date,
+        end_date=booking.end_date,
+        extras=[extra.id for extra in extras_objs]
+    ))
+    
+    await session.refresh(booking)
+    # 查出 vehicle 和 user（如果 BookingOut 需要完整嵌套而非 id）
+    await session.refresh(booking)
+    vehicle = booking.vehicle
+    user = booking.user
+
+    
+    # 组装 BookingOut，显式赋值
+    return BookingOut(
+        id=booking.id,
+        vehicle=vehicle,  # 如果 BookingOut 只要 id，可以填 vehicle_id=booking.vehicle_id
+        user=user,
+        start_date=booking.start_date,
+        end_date=booking.end_date,
+        status=booking.status,
+        total_fee=fee_result.total_fee,
+        extras=fee_result.extras,           # List[BookingExtraOut]
+        currency=fee_result.currency,
+    )
 
 async def get_user_bookings(session: AsyncSession, user_id: int):
     result = await session.execute(
