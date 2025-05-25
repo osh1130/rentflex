@@ -22,16 +22,36 @@ services:
 #     volumes:
 #       - ./mock:/app
 
+  mysql:
+    image: mysql:8.0
+    container_name: rentflex-mysql
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: rentflex
+      MYSQL_USER: vivizhao
+      MYSQL_PASSWORD: Ohsehun19981130!
+    volumes:
+      - mysql_data:/var/lib/mysql
 
 
   backend:
     build:
       context: .
-      dockerfile: backend/Dockerfile.backend
+      dockerfile: Dockerfile.backend
+    container_name: rentflex-backend
+    volumes:
+      - ./backend:/app  # 热重载关键点：绑定代码
     ports:
       - "8000:8000"
-    volumes:
-      - ./backend:/app         # 本地 backend 代码挂载到容器 /app，支持热重载
-      - /app/__pycache__      # 避免缓存问题
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    depends_on:
+      - mysql
+    environment:
+      - ENV=dev
+    env_file:
+      - ./backend/.env.dev
+
+volumes:
+  mysql_data:
 

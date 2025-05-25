@@ -5,9 +5,12 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 
 # 加载 .env 文件
 load_dotenv()
-
+DATABASE_URL = (
+    f"mysql+aiomysql://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}"
+    f"@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
+)
 # 从环境变量中读取数据库 URL
-DATABASE_URL = os.getenv("DATABASE_URL")
+
 
 engine = create_async_engine(DATABASE_URL, echo=True)
 
