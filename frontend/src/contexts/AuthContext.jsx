@@ -1,0 +1,64 @@
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { getMe } from '../api/auth';
+
+const AuthContext = createContext(null);
+
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      getMe(token)
+        .then(userData => {
+          setUser(userData);
+        })
+        .catch(err => {
+          console.error('Auth error:', err);
+          localStorage.removeItem('token');
+          setError(err.message);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    } else {
+      setLoading(false);
+    }
+  }, []);
+
+  const login = (userData, token) => {
+    setUser(userData);
+    localStorage.setItem('token', token);
+  };
+
+  const logout = () => {
+    setUser(null);
+    localStorage.removeItem('token');
+  };
+
+  const value = {
+    user,
+    loading,
+    error,
+    login,
+    logout,
+    isAdmin: user?.role === 'admin',
+    isAuthenticated: !!user,
+  };
+
+  if (loading) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+}; 

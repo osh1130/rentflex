@@ -1,17 +1,18 @@
 version: '3.9'
 
 services:
-#   frontend:
-#     build:
-#       context: .
-#       dockerfile: Dockerfile.frontend
-#     ports:
-#       - "3000:3000"
-#     volumes:
-#       - ./frontend:/app
-#     command: npm run dev
-#     depends_on:
-#       - mock
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "3000:3000"
+    platform: linux/amd64
+    volumes:
+      - ./frontend:/app
+    command: npm run dev
+    depends_on:
+      - backend
 
 #   mock:
 #     build:

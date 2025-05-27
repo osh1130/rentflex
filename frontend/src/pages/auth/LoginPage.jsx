@@ -1,34 +1,20 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { register } from '../../api/auth';
+import { login } from '../../api/auth';
 import { useAuth } from '../../contexts/AuthContext';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import MainLayout from '../../components/layout/MainLayout';
-import { validateEmail, validatePassword, validateName } from '../../utils/validation';
 
-const RegisterPage = () => {
+const LoginPage = () => {
   const navigate = useNavigate();
   const { login: setAuth } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    name: '',
   });
-  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
-  const validateForm = () => {
-    const newErrors = {
-      email: validateEmail(formData.email),
-      password: validatePassword(formData.password),
-      name: validateName(formData.name),
-    };
-
-    setErrors(newErrors);
-    return !Object.values(newErrors).some(error => error !== '');
-  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -36,26 +22,19 @@ const RegisterPage = () => {
       ...prev,
       [name]: value
     }));
-    // Clear error when user types
-    setErrors(prev => ({
-      ...prev,
-      [name]: ''
-    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
-
     setLoading(true);
     setError('');
 
     try {
-      const response = await register(formData.email, formData.password, formData.name);
+      const response = await login(formData.email, formData.password);
       setAuth(response.user, response.token);
-      navigate('/vehicles');
+      navigate(response.user.role === 'admin' ? '/admin/bookings' : '/vehicles');
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+      setError(err.response?.data?.message || 'Failed to login. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -67,12 +46,12 @@ const RegisterPage = () => {
         <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-lg">
           <div>
             <h2 className="text-center text-3xl font-bold text-gray-900">
-              Create your account
+              Welcome back
             </h2>
             <p className="mt-2 text-center text-sm text-gray-600">
-              Already have an account?{' '}
-              <Link to="/login" className="text-green-600 hover:text-green-500">
-                Sign in
+              Don't have an account?{' '}
+              <Link to="/register" className="text-green-600 hover:text-green-500">
+                Register here
               </Link>
             </p>
           </div>
@@ -86,22 +65,11 @@ const RegisterPage = () => {
 
             <div className="space-y-4">
               <Input
-                label="Full Name"
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                error={errors.name}
-                required
-              />
-
-              <Input
                 label="Email Address"
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                error={errors.email}
                 required
                 autoComplete="email"
               />
@@ -112,9 +80,8 @@ const RegisterPage = () => {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                error={errors.password}
                 required
-                autoComplete="new-password"
+                autoComplete="current-password"
               />
             </div>
 
@@ -123,7 +90,7 @@ const RegisterPage = () => {
               loading={loading}
               className="w-full"
             >
-              Create Account
+              Sign in
             </Button>
           </form>
         </div>
@@ -132,4 +99,4 @@ const RegisterPage = () => {
   );
 };
 
-export default RegisterPage;
+export default LoginPage; 

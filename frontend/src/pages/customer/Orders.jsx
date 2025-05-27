@@ -1,42 +1,135 @@
-import React, { useEffect, useState, useContext } from 'react'
-import { getMyBookings, cancelBooking } from '../../api/booking'
-import { UserContext } from '../../contexts/UserContext'
+import React, { useState, useEffect } from 'react';
+import { getMyBookings, cancelBooking } from '../../api/booking';
+import StatusBadge from '../../components/common/StatusBadge';
+import Button from '../../components/common/Button';
+import Loader from '../../components/common/Loader';
+import MainLayout from '../../components/layout/MainLayout';
+import { getDateRangeString } from '../../utils/date';
 
-export default function Orders() {
-  const [orders, setOrders] = useState([])
-  const { token } = useContext(UserContext)
+const OrdersPage = () => {
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const fetchBookings = async () => {
+    try {
+      const data = await getMyBookings();
+      setBookings(data);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to fetch bookings');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    getMyBookings(token).then(setOrders)
-  }, [token])
+    fetchBookings();
+  }, []);
 
-  const handleCancel = async (id) => {
-    await cancelBooking(id, token)
-    setOrders(orders.filter(o => o.id !== id))
+  const handleCancel = async (bookingId) => {
+    try {
+      await cancelBooking(bookingId);
+      // Refresh bookings after cancellation
+      fetchBookings();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to cancel booking');
+    }
+  };
+
+  if (loading) {
+    return (
+      <MainLayout>
+        <div className="flex justify-center py-12">
+          <Loader size="lg" />
+        </div>
+      </MainLayout>
+    );
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <h2 className="text-2xl font-semibold text-primary mb-4">My Orders</h2>
-      <ul className="space-y-2">
-        {orders.map(o => (
-          <li key={o.id} className="p-4 border rounded-lg flex justify-between items-center">
-            <div>
-              <p><span className="font-medium">Vehicle:</span> {o.vehicleName}</p>
-              <p><span className="font-medium">Date:</span> {o.startDate} to {o.endDate}</p>
-              <p><span className="font-medium">Status:</span> {o.status}</p>
-            </div>
-            {o.status === 'pending' && (
-              <button
-                onClick={() => handleCancel(o.id)}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+    <MainLayout>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">My Bookings</h1>
+
+        {error && (
+          <div className="bg-red-50 text-red-500 p-4 rounded-md mb-6">
+            {error}
+          </div>
+        )}
+
+        {bookings.length === 0 ? (
+          <div className="text-center py-12 bg-white rounded-lg shadow">
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              No bookings found
+            </h3>
+            <p className="text-gray-500">
+              You haven't made any bookings yet.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {bookings.map((booking) => (
+              <div
+                key={booking.id}
+                className="bg-white rounded-lg shadow p-6"
               >
-                Cancel
-              </button>
-            )}
-          </li>
-        ))}
-      </ul>
-    </div>
-  )
-}
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-medium text-gray-900">
+                    {booking.vehicle.name}
+                  </h3>
+                  <StatusBadge status={booking.status} />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <p className="text-sm text-gray-500">Booking Period</p>
+                    <p className="font-medium">
+                      {getDateRangeString(booking.startDate, booking.endDate)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Total Price</p>
+                    <p className="font-medium text-green-600">
+                      ${booking.totalPrice}
+                    </p>
+                  </div>
+                </div>
+
+                {booking.status === 'pending' && (
+                  <div className="mt-4">
+                    <Button
+                      variant="danger"
+                      onClick={() => handleCancel(booking.id)}
+                    >
+                      Cancel Booking
+                    </Button>
+                  </div>
+                )}
+
+                {booking.additionalServices?.length > 0 && (
+                  <div className="mt-4 pt-4 border-t">
+                    <p className="text-sm font-medium text-gray-500 mb-2">
+                      Additional Services
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {booking.additionalServices.map((service) => (
+                        <span
+                          key={service.id}
+                          className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
+                        >
+                          {service.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </MainLayout>
+  );
+};
+
+export default OrdersPage;

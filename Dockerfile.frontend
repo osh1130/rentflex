@@ -1,15 +1,14 @@
 FROM node:18
 
 WORKDIR /app
+COPY . .
 
-# 复制依赖描述文件
-COPY frontend/package*.json ./
+# 避免 rollup 加载 native 模块
+ENV ROLLUP_NO_NATIVE=true
 
-# 安装依赖（包含 vite）
-RUN npm install
+# 使用 npm 更稳定（也可替换为 pnpm）
+RUN rm -rf node_modules package-lock.json && \
+    npm cache clean --force && \
+    npm install --legacy-peer-deps
 
-# 拷贝前端所有源码进去
-COPY frontend/ ./
-
-# 启动 vite 开发服务
 CMD ["npm", "run", "dev"]

@@ -1,37 +1,89 @@
-import { Routes, Route } from 'react-router-dom';
-import Navbar from './components/Navbar';
-import AdminRoute from './components/AdminRoute';
-import Home from './pages/auth/Home';
-import Login from './pages/auth/Login';
-import Register from './pages/auth/Register';
-import VehicleList from './pages/customer/VehicleList';
-import Booking from './pages/customer/Booking';
-import Orders from './pages/customer/Orders';
-import Profile from './pages/customer/Profile';
-import AdminUserList from './pages/admin/AdminUserList';
-import ApproveOrders from './pages/admin/ApproveOrders';
-import AdminVehicleList from './pages/admin/AdminVehicleList'
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
+import LoginPage from './pages/auth/LoginPage';
+import RegisterPage from './pages/auth/RegisterPage';
+import VehicleListPage from './pages/customer/VehicleListPage';
+import MyBookingsPage from './pages/customer/MyBookingsPage';
+import BookingManagementPage from './pages/admin/BookingManagementPage';
+import VehicleManagementPage from './pages/admin/VehicleManagementPage';
+import UserManagementPage from './pages/admin/UserManagementPage';
 import VehicleDetail from './pages/customer/VehicleDetail';
 
-export default function App() {
-  return (
-    <>
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/vehicles" element={<VehicleList />} />
-        <Route path="/vehicle/:id" element={<VehicleDetail />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/booking/:id" element={<Booking />} />
-        <Route path="/orders" element={<Orders />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/admin/users" element={<AdminRoute><AdminUserList /></AdminRoute>} />
-        <Route path="/admin/orders" element={<AdminRoute><ApproveOrders /></AdminRoute>} />
-        <Route path="/admin/vehicles" element={<AdminRoute><AdminVehicleList /></AdminRoute>} />
-        
+// Protected route wrapper
+const ProtectedRoute = ({ children, allowedRoles = [] }) => {
+  const { user, isAuthenticated } = useAuth();
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" />;
+  }
 
-      </Routes>
-    </>
+  if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
+    return <Navigate to="/" />;
+  }
+
+  return children;
+};
+
+function App() {
+  return (
+    <Router>
+      <AuthProvider>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          
+          {/* Customer Routes */}
+          <Route
+            path="/vehicles"
+            element={
+              <ProtectedRoute>
+                <VehicleListPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-bookings"
+            element={
+              <ProtectedRoute>
+                <MyBookingsPage />
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Admin Routes */}
+          <Route
+            path="/admin/bookings"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <BookingManagementPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/vehicles"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <VehicleManagementPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/users"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <UserManagementPage />
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Default redirect */}
+          <Route path="/" element={<Navigate to="/vehicles" />} />
+        </Routes>
+      </AuthProvider>
+    </Router>
   );
 }
+
+export default App;
