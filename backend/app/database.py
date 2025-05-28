@@ -3,8 +3,8 @@ from dotenv import load_dotenv
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-# 加载 .env 文件
-load_dotenv()
+# 加载 .env.dev 文件
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '.env.dev'))
 DATABASE_URL = (
     f"mysql+aiomysql://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}"
     f"@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"

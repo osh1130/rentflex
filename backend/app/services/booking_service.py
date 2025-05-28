@@ -50,6 +50,7 @@ async def create_booking(session: AsyncSession, user_id: int, booking_in: Bookin
         start_date=booking_in.start_date,
         end_date=booking_in.end_date,
         status=BookingStatus.pending,
+        total_fee=0  # 先占位，后面再更新
     )
     
     session.add(booking)
@@ -64,40 +65,26 @@ async def create_booking(session: AsyncSession, user_id: int, booking_in: Bookin
                 fee=extra.fee
             )
         )
-    await session.commit()
-
-    # 4. 查询 booking_extras join extras
-    stmt = (
-        select(Extra.id, Extra.name, booking_extras.c.fee)
-        .select_from(
-            join(booking_extras, Extra, booking_extras.c.extra_id == Extra.id)
-        )
-        .where(booking_extras.c.booking_id == booking.id)
-    )
-    result = await session.execute(stmt)
+    # 4. 计算 total_fee 并写入
     fee_result = await calculate_booking_fee(session, BookingCalculationRequest(
         vehicle_id=booking.vehicle_id,
         start_date=booking.start_date,
         end_date=booking.end_date,
         extras=[extra.id for extra in extras_objs]
     ))
-    
+    booking.total_fee = fee_result.total_fee
+    await session.commit()
     await session.refresh(booking)
-    # 查出 vehicle 和 user（如果 BookingOut 需要完整嵌套而非 id）
-    await session.refresh(booking)
-    vehicle = booking.vehicle
-    user = booking.user
 
-    
     # 组装 BookingOut，显式赋值
     return BookingOut(
         id=booking.id,
-        vehicle=vehicle,  # 如果 BookingOut 只要 id，可以填 vehicle_id=booking.vehicle_id
-        user=user,
+        vehicle=booking.vehicle,  # 如果 BookingOut 只要 id，可以填 vehicle_id=booking.vehicle_id
+        user=booking.user,
         start_date=booking.start_date,
         end_date=booking.end_date,
         status=booking.status,
-        total_fee=fee_result.total_fee,
+        total_fee=booking.total_fee,
         extras=fee_result.extras,           # List[BookingExtraOut]
         currency=fee_result.currency,
     )
@@ -107,7 +94,8 @@ async def get_user_bookings(session: AsyncSession, user_id: int):
         select(Booking)
         .options(
             selectinload(Booking.vehicle),
-            selectinload(Booking.user)
+            selectinload(Booking.user),
+            selectinload(Booking.extras)
         )
         .where(Booking.user_id == user_id))
     bookings = result.scalars().all()

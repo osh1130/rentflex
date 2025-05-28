@@ -1,5 +1,5 @@
 import React from 'react';
-import { validateDates } from '../../utils/validation';
+// import { validateDates } from '../../utils/validation';
 
 const DatePicker = ({ 
   startDate, 
@@ -35,7 +35,6 @@ const DatePicker = ({
           `}
         />
       </div>
-
       <div>
         <label className="block text-sm font-medium text-gray-700">
           End Date
@@ -51,7 +50,6 @@ const DatePicker = ({
           `}
         />
       </div>
-
       {error && (
         <p className="mt-2 text-sm text-red-600">
           {error}

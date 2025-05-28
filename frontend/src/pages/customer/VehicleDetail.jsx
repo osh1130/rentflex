@@ -1,202 +1,158 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { getVehicleById } from '../../api/vehicle';
-import { calculateBookingFee } from '../../api/booking';
-import DatePicker from '../../components/booking/DatePicker';
-import ServiceSelector from '../../components/booking/ServiceSelector';
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import api from '../../api/api';
 import Button from '../../components/common/Button';
 import Loader from '../../components/common/Loader';
 import MainLayout from '../../components/layout/MainLayout';
-import { validateDates } from '../../utils/validation';
-import { formatDate, calculateDays } from '../../utils/date';
+import DatePicker from '../../components/booking/DatePicker';
 
-const VehicleDetailPage = () => {
+const EXTRAS = [
+  { id: 1, name: 'GPS Navigation', description: 'High-precision GPS device', fee: 10, active: true },
+  { id: 2, name: 'Child Seat', description: 'Safe child seat', fee: 15, active: true },
+  { id: 3, name: 'Extra Insurance', description: 'Full insurance coverage', fee: 20, active: true },
+  // ...add more if needed
+];
+
+export default function VehicleDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [vehicle, setVehicle] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [extras, setExtras] = useState([]);
+  const [dates, setDates] = useState({ start: '', end: '' });
+  const [priceDetail, setPriceDetail] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const [selectedServices, setSelectedServices] = useState([]);
-  const [bookingDetails, setBookingDetails] = useState({
-    startDate: formatDate(new Date()),
-    endDate: formatDate(new Date(Date.now() + 24 * 60 * 60 * 1000)),
-    totalPrice: 0
-  });
-  const [dateError, setDateError] = useState('');
-  const [calculating, setCalculating] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    const fetchVehicle = async () => {
+    async function fetchVehicle() {
       try {
-        const data = await getVehicleById(id);
-        setVehicle(data);
+        setLoading(true);
+        const res = await api.get(`/vehicles/${id}`);
+        setVehicle(res.data);
       } catch (err) {
-        setError(err.response?.data?.message || 'Failed to fetch vehicle details');
+        setError('Failed to fetch vehicle info');
       } finally {
         setLoading(false);
       }
-    };
-
+    }
     fetchVehicle();
   }, [id]);
 
   useEffect(() => {
-    const calculatePrice = async () => {
-      const dateValidation = validateDates(bookingDetails.startDate, bookingDetails.endDate);
-      if (dateValidation) {
-        setDateError(dateValidation);
-        return;
-      }
-
-      setCalculating(true);
+    if (!dates.start || !dates.end) return;
+    async function calc() {
       try {
-        const data = await calculateBookingFee({
-          vehicleId: id,
-          startDate: bookingDetails.startDate,
-          endDate: bookingDetails.endDate,
-          services: selectedServices
+        const res = await api.post('/bookings/calculate', {
+          vehicle_id: Number(id),
+          start_date: dates.start,
+          end_date: dates.end,
+          extras: extras,
         });
-        setBookingDetails(prev => ({
-          ...prev,
-          totalPrice: data.totalPrice
-        }));
-        setDateError('');
+        setPriceDetail(res.data);
       } catch (err) {
-        setError(err.response?.data?.message || 'Failed to calculate price');
-      } finally {
-        setCalculating(false);
+        setPriceDetail(null);
       }
-    };
-
-    if (vehicle) {
-      calculatePrice();
     }
-  }, [id, bookingDetails.startDate, bookingDetails.endDate, selectedServices]);
+    calc();
+  }, [dates, extras, id]);
 
-  if (loading) {
-    return (
-      <MainLayout>
-        <div className="flex justify-center py-12">
-          <Loader size="lg" />
-        </div>
-      </MainLayout>
-    );
-  }
+  const handleOrder = async () => {
+    setSubmitting(true);
+    setError('');
+    setSuccess(false);
+    try {
+      await api.post('/bookings', {
+        vehicle_id: Number(id),
+        start_date: dates.start,
+        end_date: dates.end,
+        extras: extras,
+      });
+      setSuccess(true);
+      setTimeout(() => navigate('/vehicles'), 2000);
+    } catch (err) {
+      setError('Order failed, please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
-  if (error) {
-    return (
-      <MainLayout>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="bg-red-50 text-red-500 p-4 rounded-md">
-            {error}
-          </div>
-        </div>
-      </MainLayout>
-    );
-  }
+  if (loading) return <Loader />;
+  if (!vehicle) return <div className="p-8 text-center text-red-500">{error || 'Vehicle not found'}</div>;
 
   return (
     <MainLayout>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="lg:grid lg:grid-cols-2 lg:gap-8">
-          {/* Vehicle Image and Details */}
-          <div>
-            <div className="aspect-w-16 aspect-h-9 rounded-lg overflow-hidden">
-              <img
-                src={vehicle.image || 'https://via.placeholder.com/800x450?text=No+Image'}
-                alt={vehicle.name}
-                className="w-full h-full object-cover"
-              />
-            </div>
-
-            <div className="mt-6">
-              <h1 className="text-3xl font-bold text-gray-900">{vehicle.name}</h1>
-              <div className="mt-4 space-y-4">
-                <div className="flex items-center text-gray-500">
-                  <span className="mr-4">
-                    <i className="fas fa-car mr-1"></i> {vehicle.type}
-                  </span>
-                  <span className="mr-4">
-                    <i className="fas fa-users mr-1"></i> {vehicle.seats} seats
-                  </span>
-                  <span>
-                    <i className="fas fa-cog mr-1"></i> {vehicle.transmission}
-                  </span>
-                </div>
-                <p className="text-gray-600">{vehicle.description}</p>
-                <p className="text-2xl font-bold text-green-600">
-                  ${vehicle.price}/day
-                </p>
-              </div>
-            </div>
+      <div className="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow">
+        <div className="flex flex-col md:flex-row gap-6">
+          <img
+            src={vehicle.image_url || 'https://via.placeholder.com/400x225?text=No+Image'}
+            alt={`${vehicle.make} ${vehicle.model}`}
+            className="w-full md:w-1/2 rounded object-cover"
+          />
+          <div className="flex-1 space-y-2">
+            <h2 className="text-2xl font-bold">{vehicle.make} {vehicle.model} {vehicle.year}</h2>
+            <div className="text-gray-600">Seats: {vehicle.seats}</div>
+            <div className="text-gray-600">Mileage: {vehicle.mileage} km</div>
+            <div className="text-gray-600">Available now: {vehicle.available_now ? 'Yes' : 'No'}</div>
+            <div className="text-gray-600">Rental period: {vehicle.minimum_rent_period}~{vehicle.maximum_rent_period} days</div>
+            <div className="text-green-600 font-bold text-xl mt-2">${vehicle.price_per_day}/day</div>
           </div>
+        </div>
 
-          {/* Booking Form */}
-          <div className="mt-8 lg:mt-0">
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                Book this vehicle
-              </h2>
+        <div className="mt-6">
+          <h3 className="font-semibold mb-2">Select rental period</h3>
+          <DatePicker
+            startDate={dates.start}
+            endDate={dates.end}
+            onStartDateChange={start => setDates(prev => ({ ...prev, start }))}
+            onEndDateChange={end => setDates(prev => ({ ...prev, end }))}
+          />
+        </div>
 
-              <div className="space-y-6">
-                <DatePicker
-                  startDate={bookingDetails.startDate}
-                  endDate={bookingDetails.endDate}
-                  onStartDateChange={(date) => setBookingDetails(prev => ({ ...prev, startDate: date }))}
-                  onEndDateChange={(date) => setBookingDetails(prev => ({ ...prev, endDate: date }))}
-                  error={dateError}
-                />
-
-                <ServiceSelector
-                  selectedServices={selectedServices}
-                  onServiceToggle={(serviceId) => {
-                    setSelectedServices(prev =>
-                      prev.includes(serviceId)
-                        ? prev.filter(id => id !== serviceId)
-                        : [...prev, serviceId]
+        <div className="mt-6">
+          <h3 className="font-semibold mb-2">Extras</h3>
+          <div className="flex flex-wrap gap-4">
+            {EXTRAS.filter(e => e.active).map(extra => (
+              <label key={extra.id} className="flex items-center space-x-2 border rounded px-3 py-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={extras.includes(extra.id)}
+                  onChange={e => {
+                    setExtras(prev =>
+                      e.target.checked
+                        ? [...prev, extra.id]
+                        : prev.filter(id => id !== extra.id)
                     );
                   }}
                 />
-
-                <div className="border-t pt-6">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-gray-600">Daily Rate</span>
-                    <span className="font-medium">${vehicle.price}</span>
-                  </div>
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-gray-600">Duration</span>
-                    <span className="font-medium">
-                      {calculateDays(bookingDetails.startDate, bookingDetails.endDate)} days
-                    </span>
-                  </div>
-                  {selectedServices.length > 0 && (
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-gray-600">Additional Services</span>
-                      <span className="font-medium">
-                        ${bookingDetails.totalPrice - (vehicle.price * calculateDays(bookingDetails.startDate, bookingDetails.endDate))}
-                      </span>
-                    </div>
-                  )}
-                  <div className="flex justify-between items-center border-t pt-4 mt-4">
-                    <span className="text-lg font-bold">Total Price</span>
-                    <span className="text-2xl font-bold text-green-600">
-                      ${calculating ? '...' : bookingDetails.totalPrice}
-                    </span>
-                  </div>
-                </div>
-
-                <Button
-                  className="w-full"
-                  disabled={calculating || !!dateError}
-                >
-                  Book Now
-                </Button>
-              </div>
-            </div>
+                <span className="font-medium">{extra.name}</span>
+                <span className="text-gray-500 text-sm">+${extra.fee}/day</span>
+                <span className="text-gray-400 text-xs">{extra.description}</span>
+              </label>
+            ))}
           </div>
         </div>
+
+        {priceDetail && (
+          <div className="mt-6 bg-gray-50 p-4 rounded">
+            <h4 className="font-semibold mb-2">Price Details</h4>
+            <div className="text-lg font-bold text-green-700 mt-2">Total: ${priceDetail.total_fee}</div>
+          </div>
+        )}
+
+        {success && <div className="text-green-600 mt-4">Order placed successfully! Redirecting...</div>}
+        {error && <div className="text-red-500 mt-4">{error}</div>}
+
+        <Button
+          className="mt-8 w-full"
+          loading={submitting}
+          disabled={!dates.start || !dates.end || !vehicle.available_now}
+          onClick={handleOrder}
+        >
+          Place Order
+        </Button>
       </div>
     </MainLayout>
   );
-};
-
-export default VehicleDetailPage;
+}

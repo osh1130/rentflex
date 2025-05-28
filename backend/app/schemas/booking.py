@@ -38,7 +38,7 @@ class BookingOut(BaseModel):
     end_date: date
     status: BookingStatus
     extras: List[BookingExtraOut] = []
-    total_fee: float
+    total_fee: Optional[float] = None
     currency: str = "NZD"
 
     class Config:

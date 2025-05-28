@@ -62,6 +62,7 @@ class Booking(Base):
     start_date = Column(Date, nullable=False)
     end_date = Column(Date, nullable=False)
     status = Column(Enum(BookingStatus), default=BookingStatus.pending)
+    total_fee = Column(Float, nullable=False, default=0)
 
     user = relationship("User", back_populates="bookings")
     vehicle = relationship("Vehicle", back_populates="bookings")

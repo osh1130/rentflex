@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { login } from '../../api/auth';
+import { loginApi } from '../../api/auth';
 import { useAuth } from '../../contexts/AuthContext';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
@@ -8,7 +8,7 @@ import MainLayout from '../../components/layout/MainLayout';
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { login: setAuth } = useAuth();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -30,9 +30,12 @@ const LoginPage = () => {
     setError('');
 
     try {
-      const response = await login(formData.email, formData.password);
-      await login(response.access_token);
-      navigate(response.user.role === 'admin' ? '/admin/orders' : '/vehicles');
+      const response = await loginApi(formData.email, formData.password);
+      //console.log('[LoginPage] token:', response.access_token);
+      const userData = await login(response.access_token); // 用 context login 方法
+
+      navigate(userData.role === 'admin' ? '/admin/orders' : '/vehicles');
+      //navigate('/vehicles');
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to login. Please try again.');
     } finally {

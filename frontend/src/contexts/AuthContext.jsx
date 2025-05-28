@@ -28,11 +28,23 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  // const login = async (token) => {
+  //   const userData = await getMe(token);
+  //   setUser(userData);
+  //   localStorage.setItem('token', token);
+  // };
   const login = async (token) => {
-    const userData = await getMe(token);
-    setUser(userData);
-    localStorage.setItem('token', token);
+    try {
+      const userData = await getMe(token);
+      setUser(userData);
+      localStorage.setItem('token', token);
+      return userData;
+    } catch (err) {
+      console.error('[AuthContext] login error:', err);
+      throw err;
+    }
   };
+
 
   const logout = () => {
     setUser(null);

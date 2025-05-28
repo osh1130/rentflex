@@ -17,7 +17,7 @@ class BookingExtraOut(BaseModel):
     id: int
     name: str
     fee: float
-    currency: str 
+    currency: Optional[str] = "NZD"
     class Config:
         from_attributes = True
 

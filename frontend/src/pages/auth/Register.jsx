@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { register } from '../../api/auth';
-import { useAuth } from '../../contexts/AuthContext';
+import { registerApi } from '../../api/auth';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import MainLayout from '../../components/layout/MainLayout';
@@ -9,7 +8,6 @@ import { validateEmail, validatePassword, validateName } from '../../utils/valid
 
 const RegisterPage = () => {
   const navigate = useNavigate();
-  const { login: setAuth } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -18,6 +16,7 @@ const RegisterPage = () => {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
 
   const validateForm = () => {
     const newErrors = {
@@ -25,7 +24,6 @@ const RegisterPage = () => {
       password: validatePassword(formData.password),
       name: validateName(formData.name),
     };
-
     setErrors(newErrors);
     return !Object.values(newErrors).some(error => error !== '');
   };
@@ -36,7 +34,6 @@ const RegisterPage = () => {
       ...prev,
       [name]: value
     }));
-    // Clear error when user types
     setErrors(prev => ({
       ...prev,
       [name]: ''
@@ -46,18 +43,40 @@ const RegisterPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
-
     setLoading(true);
     setError('');
-
+    setSuccess(false);
     try {
-      const response = await register(formData.email, formData.password, formData.name);
-      setAuth(response.user, response.token);
-      navigate('/vehicles');
+      await registerApi(formData.email, formData.password, formData.name);
+      setSuccess(true);
+      setTimeout(() => navigate('/login'), 2000);
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.');
-    } finally {
-      setLoading(false);
+      // 处理后端返回的字段错误
+      const data = err.response?.data;
+      if (Array.isArray(data?.detail)) {
+        // 处理字段错误
+        let fieldErrors = {};
+        data.detail.forEach(item => {
+          // 只取 body 字段类型的校验错误
+          if (item.loc && item.loc[0] === 'body') {
+            const field = item.loc[1];
+            fieldErrors[field] = item.msg;
+          }
+        });
+        setErrors(prev => ({ ...prev, ...fieldErrors }));
+        setError('');  
+      }else if (typeof data?.detail === 'string') {
+      if (data.detail.toLowerCase().includes('email')) {
+        setErrors(prev => ({ ...prev, email: data.detail }));
+      } else {
+        setError(data.detail);
+      }
+    } else {
+            const msg = data?.message || 'Registration failed. Please try again.';
+            setError(msg);
+        }
+      } finally {
+          setLoading(false);
     }
   };
 
@@ -76,6 +95,12 @@ const RegisterPage = () => {
               </Link>
             </p>
           </div>
+
+          {success && (
+            <div className="bg-green-50 text-green-700 p-3 rounded-md text-center text-sm mb-2">
+              Registration successful! Redirecting to login...
+            </div>
+          )}
 
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
             {error && (
@@ -122,6 +147,7 @@ const RegisterPage = () => {
               type="submit"
               loading={loading}
               className="w-full"
+              disabled={success}
             >
               Create Account
             </Button>

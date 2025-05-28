@@ -3,9 +3,11 @@ import { AuthProvider } from './contexts/AuthContext';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/Register';
 import VehicleListPage from './pages/customer/VehicleList';
-import Booking from './pages/customer/Booking';
+
 import AdminVehicleList from './pages/admin/AdminVehicleList';
 import ApproveOrders from './pages/admin/ApproveOrders';
+import VehicleDetail from './pages/customer/VehicleDetail';
+import OrdersPage from './pages/customer/Orders';
 
 function App() {
   return (
@@ -16,7 +18,8 @@ function App() {
       
       {/* Customer Routes */}
       <Route path="/vehicles" element={<VehicleListPage />} />
-      <Route path="/bookings" element={<Booking />} />
+      <Route path="/vehicles/:id" element={<VehicleDetail />} />
+      <Route path="/my-bookings" element={<OrdersPage />} />
       
       {/* Admin Routes */}
       <Route path="/admin/vehicles" element={<AdminVehicleList />} />
