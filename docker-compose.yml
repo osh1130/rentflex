@@ -10,7 +10,11 @@ services:
     platform: linux/amd64
     volumes:
       - ./frontend:/app
-    command: npm run dev
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:8000/api
+    stdin_open: true
+    tty: true
     depends_on:
       - backend
 
@@ -43,7 +47,7 @@ services:
       dockerfile: Dockerfile.backend
     container_name: rentflex-backend
     volumes:
-      - ./backend:/app  # 热重载关键点：绑定代码
+      - ./backend:/app
     ports:
       - "8000:8000"
     depends_on:

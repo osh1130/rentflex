@@ -55,6 +55,15 @@ class UserResponse(UserBase):
     class Config:
         from_attributes = True  # v2必须写这个
 
+class UserOut(BaseModel):
+    id: int
+    email: str
+    name: str
+    role: str
+
+    class Config:
+        orm_mode = True
+
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"

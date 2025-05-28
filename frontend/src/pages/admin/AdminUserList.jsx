@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { UserContext } from '../../contexts/UserContext';
+import { AuthContext } from '../../contexts/AuthContext';
 import AdminLayout from '../../components/layout/AdminLayout';
 import {
   getAllUsers,
@@ -9,7 +9,7 @@ import {
 import Loader from '../../components/common/Loader';
 
 export default function AdminUserList() {
-  const { token } = useContext(UserContext);
+  const { token } = useContext(AuthContext);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

@@ -6,6 +6,9 @@ export const createBooking = async (bookingData) => {
   return res.data
 }
 
+// 兼容旧代码
+export const bookVehicle = createBooking;
+
 // 获取用户所有订单
 export const getMyBookings = async () => {
   const res = await api.get('/bookings')

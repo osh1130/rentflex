@@ -13,14 +13,14 @@ export const register = async (email, password, name) => {
     email, 
     password, 
     name,
-    role: 'customer' // 默认注册为普通用户
+    // role: 'customer' 默认注册为普通用户
   })
   return res.data
 }
 
-// TODO: 后端需要实现此接口
+
 export const getMe = async (token) => {
-  const res = await api.get('/auth/me', {
+  const res = await api.get('/me', {
     headers: {
       Authorization: `Bearer ${token}`
     }

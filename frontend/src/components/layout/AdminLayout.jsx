@@ -1,9 +1,9 @@
 import React, { useContext, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { UserContext } from '../../contexts/UserContext';
+import { AuthContext } from '../../contexts/AuthContext';
 
 const AdminLayout = ({ children }) => {
-  const { user } = useContext(UserContext);
+  const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -16,9 +16,7 @@ const AdminLayout = ({ children }) => {
 
   const navItems = [
     { path: '/admin/vehicles', label: 'Vehicles', icon: '🚗' },
-    { path: '/admin/users', label: 'Users', icon: '👥' },
-    { path: '/admin/orders', label: 'Orders', icon: '📋' },
-    { path: '/admin/dashboard', label: 'Dashboard', icon: '📊' }
+    { path: '/admin/orders', label: 'Orders', icon: '📋' }
   ];
 
   return (

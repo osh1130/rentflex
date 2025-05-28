@@ -1,21 +1,17 @@
-import api, { withCache } from './api'
+import api from './api'
 
 // 获取可预订的车辆（按日期范围过滤）
 export const getAvailableVehicles = async (startDate, endDate) => {
   if (!startDate || !endDate) {
     throw new Error('Start date and end date are required')
   }
-
-  const cacheKey = `vehicles_${startDate}_${endDate}`;
-  return withCache(cacheKey, async () => {
-    const res = await api.get('/vehicles', {
-      params: {
-        start: startDate,
-        end: endDate
-      }
-    })
-    return res.data
+  const res = await api.get('/vehicles', {
+    params: {
+      start: startDate,
+      end: endDate
+    }
   })
+  return res.data
 }
 
 export const bookVehicle = async (vehicleId, data) => {
@@ -31,11 +27,8 @@ export const getAllVehicles = async () => {
 
 // 管理员：获取单个车辆详情
 export const getVehicleById = async (id) => {
-  const cacheKey = `vehicle_${id}`;
-  return withCache(cacheKey, async () => {
-    const res = await api.get(`/admin/vehicles/${id}`)
-    return res.data
-  })
+  const res = await api.get(`/admin/vehicles/${id}`)
+  return res.data
 }
 
 // 管理员：添加新车辆

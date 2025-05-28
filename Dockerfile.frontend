@@ -1,14 +1,18 @@
-FROM node:18
+FROM node:18-alpine
+
+# Install pnpm
+RUN npm install -g pnpm
 
 WORKDIR /app
-COPY . .
 
-# 避免 rollup 加载 native 模块
-ENV ROLLUP_NO_NATIVE=true
+# Copy package files
+COPY frontend/package.json frontend/pnpm-lock.yaml* ./
 
-# 使用 npm 更稳定（也可替换为 pnpm）
-RUN rm -rf node_modules package-lock.json && \
-    npm cache clean --force && \
-    npm install --legacy-peer-deps
+# Install dependencies using pnpm
+RUN pnpm install
 
-CMD ["npm", "run", "dev"]
+# Expose port 3000 for development
+EXPOSE 3000
+
+# Start development server
+CMD ["pnpm", "dev"]

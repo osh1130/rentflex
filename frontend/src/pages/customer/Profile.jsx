@@ -1,8 +1,8 @@
 import React, { useContext } from 'react'
-import { UserContext } from '../../contexts/UserContext'
+import { AuthContext } from '../../contexts/AuthContext'
 
 export default function Profile() {
-  const { user } = useContext(UserContext)
+  const { user } = useContext(AuthContext)
 
   if (!user) {
     return <p className="p-4 text-gray-500">Loading user info...</p>

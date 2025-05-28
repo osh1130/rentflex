@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { UserContext } from '../../contexts/UserContext';
+import { AuthContext } from '../../contexts/AuthContext';
 import AdminLayout from '../../components/layout/AdminLayout';
 import {
   getAllVehicles,
@@ -10,7 +10,7 @@ import {
 import Loader from '../../components/common/Loader';
 
 export default function AdminVehicleList() {
-  const { token } = useContext(UserContext);
+  const { token } = useContext(AuthContext);
 
   // Data states
   const [vehicles, setVehicles] = useState([]);

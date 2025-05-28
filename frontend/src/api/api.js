@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // API URL configuration based on environment
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+const API_URL = 'http://localhost:8000/api';
 
 // Create axios instance with default config
 const api = axios.create({
@@ -27,26 +27,16 @@ api.interceptors.request.use(
 // Response interceptor for API calls
 api.interceptors.response.use(
   (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-
+  (error) => {
     // Handle 401 Unauthorized errors
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-      
-      // Clear token and redirect to login
+    if (error.response?.status === 401) {
       localStorage.removeItem('token');
       window.location.href = '/login';
-      return Promise.reject(error);
     }
 
-    // Handle other errors
-    const errorMessage = error.response?.data?.message || 'An unexpected error occurred';
-    console.error('API Error:', errorMessage);
-    
     return Promise.reject({
       ...error,
-      message: errorMessage
+      message: error.response?.data?.message || 'An unexpected error occurred'
     });
   }
 );

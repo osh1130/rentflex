@@ -4,7 +4,8 @@ from sqlalchemy.future import select
 from sqlalchemy import or_
 from app.database import get_session
 from app.models import User, UserRole
-from app.schemas.user import UserCreate, UserLogin, UserResponse, Token
+from app.deps import get_current_active_user
+from app.schemas.user import UserCreate, UserLogin, UserOut, UserResponse, Token
 from app.utils import hash_password, verify_password, create_access_token
 
 router = APIRouter(
@@ -60,3 +61,8 @@ async def login(user_in: UserLogin, session: AsyncSession = Depends(get_session)
 
     token = create_access_token({"sub": str(user.id), "role": user.role.value})
     return {"access_token": token, "token_type": "bearer"}
+
+
+@router.get("/me", response_model=UserOut)
+async def read_users_me(current_user: User = Depends(get_current_active_user)):
+    return current_user

@@ -1,12 +1,12 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { UserContext } from '../../contexts/UserContext';
+import { AuthContext } from '../../contexts/AuthContext';
 import AdminLayout from '../../components/layout/AdminLayout';
 import { getAllBookings, approveBooking, rejectBooking } from '../../api/booking';
 import Loader from '../../components/common/Loader';
 import { formatDate, getDateRangeString } from '../../utils/date';
 
 export default function ApproveOrders() {
-  const { token } = useContext(UserContext);
+  const { token } = useContext(AuthContext);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
