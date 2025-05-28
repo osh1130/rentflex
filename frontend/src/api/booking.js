@@ -30,21 +30,32 @@ export const calculateBookingFee = async (calculationData) => {
 // ———— 管理员侧接口 ————
 
 // 获取所有订单（审批列表）
-export const getAllBookings = async (status) => {
+export const getAllBookings = async (token, status) => {
   const res = await api.get('/admin/bookings', {
+    headers: {
+      Authorization: `Bearer ${token}`
+    },
     params: status ? { status } : undefined
-  })
-  return res.data
+  });
+  return res.data;
 }
 
 // 批准订单
-export const approveBooking = async (bookingId) => {
-  const res = await api.post(`/admin/bookings/${bookingId}/approve`)
-  return res.data
+export const approveBooking = async (bookingId, token) => {
+  const res = await api.post(`/admin/bookings/${bookingId}/approve`, {}, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+  return res.data;
 }
 
 // 拒绝订单
-export const rejectBooking = async (bookingId) => {
-  const res = await api.post(`/admin/bookings/${bookingId}/reject`)
-  return res.data
+export const rejectBooking = async (bookingId, token) => {
+  const res = await api.post(`/admin/bookings/${bookingId}/reject`, {}, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+  return res.data;
 }

@@ -5,18 +5,19 @@ export const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
+    setToken(token);
     if (token) {
       getMe(token)
         .then(userData => {
           setUser(userData);
         })
         .catch(err => {
-          console.error('Auth error:', err);
           localStorage.removeItem('token');
           setError(err.message);
         })
@@ -37,6 +38,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const userData = await getMe(token);
       setUser(userData);
+      setToken(token);
       localStorage.setItem('token', token);
       return userData;
     } catch (err) {
@@ -48,11 +50,13 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     setUser(null);
+    setToken(null);
     localStorage.removeItem('token');
   };
 
   const value = {
     user,
+    token,
     loading,
     error,
     login,

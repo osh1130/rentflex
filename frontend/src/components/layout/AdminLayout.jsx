@@ -3,7 +3,7 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { AuthContext } from '../../contexts/AuthContext';
 
 const AdminLayout = ({ children }) => {
-  const { user } = useContext(AuthContext);
+  const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -50,16 +50,25 @@ const AdminLayout = ({ children }) => {
             </ul>
           </nav>
 
-          {/* User Info */}
-          <div className="p-4 border-t">
-            <div className="flex items-center">
-              <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-600">
-                {user?.name?.charAt(0)?.toUpperCase() || 'A'}
+          <div className="mt-auto">
+            {/* User Info */}
+            <div className="p-4 border-t flex items-center space-x-3">
+              <div className="flex-shrink-0 h-10 w-10 bg-green-100 rounded-full flex items-center justify-center text-green-600 font-bold">
+                {user?.name?.charAt(0).toUpperCase()}
               </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-gray-700">{user?.name || 'Admin'}</p>
-                <p className="text-xs text-gray-500">{user?.email}</p>
+              <div className="flex-1">
+                <div className="font-medium text-gray-900">{user?.name || 'admin'}</div>
+                <div className="text-sm text-gray-500">{user?.email}</div>
               </div>
+            </div>
+            {/* Logout Button */}
+            <div className="p-4 border-t">
+              <button
+                onClick={() => { logout(); navigate('/login'); }}
+                className="w-full px-3 py-2 text-sm bg-red-100 text-red-600 rounded hover:bg-red-200"
+              >
+                Logout
+              </button>
             </div>
           </div>
         </div>

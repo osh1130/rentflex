@@ -24,14 +24,16 @@ export default function AdminVehicleList() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingVehicle, setEditingVehicle] = useState(null);
   const [formData, setFormData] = useState({
-    name: '',
-    type: '',
-    transmission: 'Automatic',
-    seats: 5,
-    price: 0,
-    description: '',
-    image: '',
-    available: true,
+    make: '',
+    model: '',
+    year: '',
+    mileage: '',
+    minimum_rent_period: '',
+    maximum_rent_period: '',
+    seats: '',
+    price_per_day: '',
+    image_url: '',
+    available_now: true,
   });
 
   // Fetch all vehicles
@@ -66,14 +68,16 @@ export default function AdminVehicleList() {
   const openAddModal = () => {
     setEditingVehicle(null);
     setFormData({
-      name: '',
-      type: '',
-      transmission: 'Automatic',
-      seats: 5,
-      price: 0,
-      description: '',
-      image: '',
-      available: true
+      make: '',
+      model: '',
+      year: '',
+      mileage: '',
+      minimum_rent_period: '',
+      maximum_rent_period: '',
+      seats: '',
+      price_per_day: '',
+      image_url: '',
+      available_now: true
     });
     setOperationError(null);
     setIsModalOpen(true);
@@ -82,14 +86,16 @@ export default function AdminVehicleList() {
   const openEditModal = vehicle => {
     setEditingVehicle(vehicle);
     setFormData({
-      name: vehicle.name,
-      type: vehicle.type,
-      transmission: vehicle.transmission || 'Automatic',
-      seats: vehicle.seats || 5,
-      price: vehicle.price,
-      description: vehicle.description || '',
-      image: vehicle.image || '',
-      available: vehicle.available,
+      make: vehicle.make || '',
+      model: vehicle.model || '',
+      year: vehicle.year || '',
+      mileage: vehicle.mileage || '',
+      minimum_rent_period: vehicle.minimum_rent_period || '',
+      maximum_rent_period: vehicle.maximum_rent_period || '',
+      seats: vehicle.seats || '',
+      price_per_day: vehicle.price_per_day || '',
+      image_url: vehicle.image_url || '',
+      available_now: vehicle.available_now ?? true
     });
     setOperationError(null);
     setIsModalOpen(true);
@@ -105,9 +111,7 @@ export default function AdminVehicleList() {
     const { name, value, type: inputType, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: inputType === 'checkbox' ? checked : 
-              inputType === 'number' ? Number(value) : 
-              value,
+      [name]: inputType === 'checkbox' ? checked : value,
     }));
   };
 
@@ -208,21 +212,24 @@ export default function AdminVehicleList() {
           <table className="w-full table-auto border-collapse">
             <thead>
               <tr className="bg-gray-100">
-                {['ID', 'Name', 'Type', 'Price', 'Available', 'Actions'].map(th => (
-                  <th key={th} className="border px-4 py-2 text-left">{th}</th>
-                ))}
+                <th className="border px-4 py-2 text-left">ID</th>
+                <th className="border px-4 py-2 text-left">Name</th>
+                <th className="border px-4 py-2 text-left">Min~Max Rent (days)</th>
+                <th className="border px-4 py-2 text-left">Price</th>
+                <th className="border px-4 py-2 text-left">Available</th>
+                <th className="border px-4 py-2 text-left">Actions</th>
               </tr>
             </thead>
             <tbody>
               {vehicles.map(v => (
                 <tr key={v.id} className="hover:bg-gray-50">
                   <td className="border px-4 py-2">{v.id}</td>
-                  <td className="border px-4 py-2">{v.name}</td>
-                  <td className="border px-4 py-2">{v.type}</td>
-                  <td className="border px-4 py-2">${v.price}</td>
+                  <td className="border px-4 py-2">{`${v.make || ''} ${v.model || ''} ${v.year || ''}`.trim()}</td>
+                  <td className="border px-4 py-2">{v.minimum_rent_period ?? '--'} ~ {v.maximum_rent_period ?? '--'}</td>
+                  <td className="border px-4 py-2">${v.price_per_day != null ? v.price_per_day : '--'}</td>
                   <td className="border px-4 py-2">
-                    <span className={v.available ? 'text-green-600' : 'text-red-600'}>
-                      {v.available ? 'Yes' : 'No'}
+                    <span className={v.available_now ? 'text-green-600' : 'text-red-600'}>
+                      {v.available_now ? 'Yes' : 'No'}
                     </span>
                   </td>
                   <td className="border px-4 py-2 space-x-2">
@@ -254,8 +261,8 @@ export default function AdminVehicleList() {
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded shadow-lg w-full max-w-md">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded shadow-lg w-full max-w-2xl" style={{ maxHeight: '90vh', overflowY: 'auto' }}>
             <h3 className="text-xl font-semibold mb-4">
               {editingVehicle ? 'Edit Vehicle' : 'Add Vehicle'}
             </h3>
@@ -268,10 +275,10 @@ export default function AdminVehicleList() {
             
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block mb-1">Name</label>
+                <label className="block mb-1">Make</label>
                 <input
-                  name="name"
-                  value={formData.name}
+                  name="make"
+                  value={formData.make}
                   onChange={handleFormChange}
                   className="w-full border px-3 py-2 rounded"
                   disabled={operationLoading}
@@ -279,31 +286,101 @@ export default function AdminVehicleList() {
                 />
               </div>
               <div>
-                <label className="block mb-1">Type</label>
-                <select
-                  name="type"
-                  value={formData.type}
+                <label className="block mb-1">Model</label>
+                <input
+                  name="model"
+                  value={formData.model}
                   onChange={handleFormChange}
                   className="w-full border px-3 py-2 rounded"
                   disabled={operationLoading}
                   required
-                >
-                  <option value="">Select type</option>
-                  <option value="Sedan">Sedan</option>
-                  <option value="SUV">SUV</option>
-                  <option value="Hatchback">Hatchback</option>
-                  <option value="Electric">Electric</option>
-                  <option value="Van">Van</option>
-                </select>
+                />
               </div>
               <div>
-                <label className="block mb-1">Price (per day)</label>
+                <label className="block mb-1">Year</label>
                 <input
-                  name="price"
+                  name="year"
+                  type="number"
+                  min="1900"
+                  max="2100"
+                  value={formData.year}
+                  onChange={handleFormChange}
+                  className="w-full border px-3 py-2 rounded"
+                  disabled={operationLoading}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block mb-1">Mileage</label>
+                <input
+                  name="mileage"
+                  type="number"
+                  min="0"
+                  value={formData.mileage}
+                  onChange={handleFormChange}
+                  className="w-full border px-3 py-2 rounded"
+                  disabled={operationLoading}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block mb-1">Min Rent Period (days)</label>
+                <input
+                  name="minimum_rent_period"
+                  type="number"
+                  min="1"
+                  value={formData.minimum_rent_period}
+                  onChange={handleFormChange}
+                  className="w-full border px-3 py-2 rounded"
+                  disabled={operationLoading}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block mb-1">Max Rent Period (days)</label>
+                <input
+                  name="maximum_rent_period"
+                  type="number"
+                  min="1"
+                  value={formData.maximum_rent_period}
+                  onChange={handleFormChange}
+                  className="w-full border px-3 py-2 rounded"
+                  disabled={operationLoading}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block mb-1">Seats</label>
+                <input
+                  name="seats"
+                  type="number"
+                  min="1"
+                  value={formData.seats}
+                  onChange={handleFormChange}
+                  className="w-full border px-3 py-2 rounded"
+                  disabled={operationLoading}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block mb-1">Price Per Day</label>
+                <input
+                  name="price_per_day"
                   type="number"
                   min="0"
                   step="0.01"
-                  value={formData.price}
+                  value={formData.price_per_day}
+                  onChange={handleFormChange}
+                  className="w-full border px-3 py-2 rounded"
+                  disabled={operationLoading}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block mb-1">Image URL</label>
+                <input
+                  name="image_url"
+                  value={formData.image_url}
                   onChange={handleFormChange}
                   className="w-full border px-3 py-2 rounded"
                   disabled={operationLoading}
@@ -312,9 +389,9 @@ export default function AdminVehicleList() {
               </div>
               <div className="flex items-center">
                 <input
-                  name="available"
+                  name="available_now"
                   type="checkbox"
-                  checked={formData.available}
+                  checked={formData.available_now}
                   onChange={handleFormChange}
                   className="mr-2"
                   disabled={operationLoading}

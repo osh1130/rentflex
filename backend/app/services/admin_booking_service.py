@@ -7,7 +7,8 @@ from sqlalchemy.orm import selectinload
 async def get_all_bookings(session: AsyncSession, status: str = None):
     stmt = select(Booking).options(
         selectinload(Booking.vehicle),
-        selectinload(Booking.user)
+        selectinload(Booking.user),
+        selectinload(Booking.extras)
     )
     if status:
         # 校验 status 合法性

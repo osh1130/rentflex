@@ -6,33 +6,32 @@ import Loader from '../../components/common/Loader';
 import { formatDate, getDateRangeString } from '../../utils/date';
 
 export default function ApproveOrders() {
-  const { token } = useContext(AuthContext);
+  const { token, user, loading: authLoading } = useContext(AuthContext);
   const [bookings, setBookings] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // 本地数据加载
   const [error, setError] = useState(null);
   const [operationLoading, setOperationLoading] = useState(null);
   const [operationError, setOperationError] = useState(null);
   const [operationSuccess, setOperationSuccess] = useState(null);
-  const [filter, setFilter] = useState('pending'); // 'all', 'pending', 'confirmed', 'rejected'
+  const [filter, setFilter] = useState('pending'); // 'all', 'pending', 'approved', 'rejected'
 
   useEffect(() => {
-    const fetchBookings = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const data = await getAllBookings(token);
-        setBookings(data);
-      } catch (err) {
-        setError(err.response?.data?.message || 'Failed to load bookings');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (token) {
+    if (!authLoading && token) {
+      const fetchBookings = async () => {
+        try {
+          setLoading(true);
+          setError(null);
+          const data = await getAllBookings(token);
+          setBookings(data);
+        } catch (err) {
+          setError(err.response?.data?.message || 'Failed to load bookings');
+        } finally {
+          setLoading(false);
+        }
+      };
       fetchBookings();
     }
-  }, [token]);
+  }, [token, authLoading]);
 
   useEffect(() => {
     if (operationSuccess || operationError) {
@@ -46,14 +45,12 @@ export default function ApproveOrders() {
 
   const handleApprove = async (id) => {
     if (!window.confirm('Are you sure you want to approve this booking?')) return;
-    
     setOperationLoading(id);
     setOperationError(null);
     try {
       await approveBooking(id, token);
-      setBookings(bs => bs.map(b => 
-        b.id === id ? { ...b, status: 'confirmed' } : b
-      ));
+      const data = await getAllBookings(token);
+      setBookings(data);
       setOperationSuccess('Booking approved successfully');
     } catch (err) {
       setOperationError(err.response?.data?.message || 'Failed to approve booking');
@@ -64,14 +61,12 @@ export default function ApproveOrders() {
 
   const handleReject = async (id) => {
     if (!window.confirm('Are you sure you want to reject this booking?')) return;
-    
     setOperationLoading(id);
     setOperationError(null);
     try {
       await rejectBooking(id, token);
-      setBookings(bs => bs.map(b => 
-        b.id === id ? { ...b, status: 'rejected' } : b
-      ));
+      const data = await getAllBookings(token);
+      setBookings(data);
       setOperationSuccess('Booking rejected successfully');
     } catch (err) {
       setOperationError(err.response?.data?.message || 'Failed to reject booking');
@@ -133,10 +128,10 @@ export default function ApproveOrders() {
                     <div className="text-sm">
                       <div className="font-medium text-gray-900">#{b.id}</div>
                       <div className="text-gray-500">
-                        {getDateRangeString(b.startDate, b.endDate)}
+                        {getDateRangeString(b.start_date, b.end_date)}
                       </div>
                       <div className="font-medium text-green-600">
-                        ${b.totalPrice}
+                        ${b.total_fee}
                       </div>
                     </div>
                   </td>
@@ -145,25 +140,25 @@ export default function ApproveOrders() {
                       <div className="h-10 w-10 flex-shrink-0">
                         <img
                           className="h-10 w-10 rounded object-cover"
-                          src={b.vehicle.image || 'https://via.placeholder.com/100?text=Car'}
-                          alt={b.vehicle.name}
+                          src={b.vehicle?.image_url || 'https://via.placeholder.com/100?text=Car'}
+                          alt={`${b.vehicle?.make || ''} ${b.vehicle?.model || ''}`}
                         />
                       </div>
                       <div className="ml-4">
-                        <div className="font-medium text-gray-900">{b.vehicle.name}</div>
-                        <div className="text-sm text-gray-500">{b.vehicle.type}</div>
+                        <div className="font-medium text-gray-900">{b.vehicle ? `${b.vehicle.make} ${b.vehicle.model} ${b.vehicle.year}` : '--'}</div>
+                        {/* 可加其它字段 */}
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="text-sm">
-                      <div className="font-medium text-gray-900">{b.user.name}</div>
-                      <div className="text-gray-500">{b.user.email}</div>
+                      <div className="font-medium text-gray-900">{b.user?.name || '--'}</div>
+                      <div className="text-gray-500">{b.user?.email || '--'}</div>
                     </div>
                   </td>
                   <td className="px-6 py-4">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                      ${b.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                      ${b.status === 'approved' ? 'bg-green-100 text-green-800' :
                         b.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                         'bg-red-100 text-red-800'}`}
                     >
@@ -208,7 +203,7 @@ export default function ApproveOrders() {
       <div className="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
         <h1 className="text-2xl font-bold text-gray-900">Manage Bookings</h1>
         <div className="flex space-x-2">
-          {['all', 'pending', 'confirmed', 'rejected'].map(status => (
+          {['all', 'pending', 'approved', 'rejected'].map(status => (
             <button
               key={status}
               onClick={() => setFilter(status)}
@@ -218,7 +213,7 @@ export default function ApproveOrders() {
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
             >
-              {status.charAt(0).toUpperCase() + status.slice(1)}
+              {status === 'approved' ? 'Approved' : status.charAt(0).toUpperCase() + status.slice(1)}
             </button>
           ))}
         </div>
