@@ -2,6 +2,7 @@
 
 [![api.png](https://i.postimg.cc/8kFVVqr5/api.png)](https://postimg.cc/G91fFgKw)
 
+
 RentFlex is a modern car rental management system with a user-friendly interface. Customers can browse available vehicles, book cars, and manage their orders, while administrators can manage the vehicle inventory and handle booking requests.
 
 ---
@@ -29,14 +30,25 @@ RentFlex is a modern car rental management system with a user-friendly interface
 ![admin-vehicle.png](https://i.postimg.cc/CKwvLfP7/admin-vehicle.png)
 
 **User - My Bookings**  
-![user-booking.png](https://i.postimg.cc/XJzx81V1/user-booking.png)
+![user-booking.png](https://i.postimg.cc/4d62JQZW/user-booking.png)
 
 **User - Vehicle Details**  
-![user-vehicle-detail-info.png](https://i.postimg.cc/43wWKNjg/user-vehicle-detail-info.png)
+![user-vehicle-detail-info.png](https://i.postimg.cc/MHzPXfpq/user-vehicle-detail-info.png)
 
 **User - Browse Vehicles**  
 ![user-vehicles.png](https://i.postimg.cc/nzz0qftQ/user-vehicles.png)
 
+### Default Accounts
+
+The system comes with pre-configured accounts for testing:
+
+1. **Admin Account**
+   - Email: admin@rentflex.com
+   - Password: admin123!
+
+2. **Customer Account**
+   - Email: customer@example.com
+   - Password: admin123!
 ---
 
 ## System Requirements
@@ -85,6 +97,8 @@ RentFlex is a modern car rental management system with a user-friendly interface
 4. **Access the application:**
     - Frontend: http://localhost:3000
     - Backend API: http://localhost:8000/api
+    - API Documentation: http://localhost:8000/docs (Swagger UI with detailed API information)
+
 
 ---
 
@@ -184,6 +198,7 @@ RentFlex is a modern car rental management system with a user-friendly interface
 - `wait-for-db.sh` - DB startup helper script
 - `alembic.ini` - Alembic DB migration config
 - `/alembic` - DB migration scripts
+- `init.sql` - Database initialization script with sample data
 
 ### Frontend (`/frontend`)
 
@@ -243,9 +258,26 @@ RentFlex is a modern car rental management system with a user-friendly interface
 
 ---
 
-## Developer
+## License
 
-**Xinyi Zhao**  
-- GitHub: [github.com/osh1130](https://github.com/osh1130)  
+This project is licensed under the MIT License. See the LICENSE file for details.
+
+## Maintenance Plan
+
+RentFlex follows a structured maintenance plan that outlines version control rules, upgrade strategies, and backward compatibility guarantees. For detailed information, please refer to the [Maintenance Plan](MAINTENANCE.md).
+
+## Developer Information
+
+**Xinyi Zhao**
+
+- GitHub: [github.com/osh1130](https://github.com/osh1130)
 - Email: vivizhao401@gmail.com
+
+## Contribution
+
+Contributions through issues and pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+
+## Acknowledgments
+
+Thanks to all developers and testers who contributed to this project.
 

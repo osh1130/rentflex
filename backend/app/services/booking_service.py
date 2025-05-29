@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.exc import NoResultFound
 from fastapi import HTTPException, status
+from datetime import date, datetime
 
 from ..schemas.BookingCalculate import BookingCalculationRequest
 
@@ -18,9 +19,22 @@ async def create_booking(session: AsyncSession, user_id: int, booking_in: Bookin
     if not vehicle or not vehicle.available_now:
         raise HTTPException(status_code=400, detail="Invalid input or unavailable vehicle")
 
+    # 检查开始日期是否在当前日期之后
+    today = date.today()
+    if booking_in.start_date < today:
+        raise HTTPException(status_code=400, detail="Booking start date must be today or in the future")
+
     # 检查时间逻辑
     if booking_in.end_date < booking_in.start_date:
         raise HTTPException(status_code=400, detail="End date must be after start date")
+
+    # 计算租期天数并验证是否在允许范围内
+    rental_days = (booking_in.end_date - booking_in.start_date).days + 1
+    if rental_days < vehicle.minimum_rent_period or rental_days > vehicle.maximum_rent_period:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Rental period must be between {vehicle.minimum_rent_period} and {vehicle.maximum_rent_period} days"
+        )
 
     # 检查时间冲突
     query = select(Booking).where(
