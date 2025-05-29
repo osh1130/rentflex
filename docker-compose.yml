@@ -1,4 +1,4 @@
-version: '3.9'
+version: '3.8'
 
 services:
   frontend:
@@ -29,17 +29,19 @@ services:
 
   mysql:
     image: mysql:8.0
-    container_name: rentflex-mysql
-    ports:
-      - "3307:3306"
+    restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: rentflex
-      MYSQL_USER: vivizhao
-      MYSQL_PASSWORD: Ohsehun19981130!
-    volumes:
-      - mysql_data:/var/lib/mysql
-
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3307:3306"  # 修改主机端口为3307，避免与本地MySQL冲突
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-pyourpassword"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   backend:
     build:
@@ -53,9 +55,15 @@ services:
     depends_on:
       - mysql
     environment:
-      - ENV=dev
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      ENV: dev
     env_file:
       - ./backend/.env.dev
+    command: ["sh", "/app/wait-for-db.sh", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
 volumes:
   mysql_data:

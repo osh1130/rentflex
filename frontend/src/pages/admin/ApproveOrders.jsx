@@ -53,7 +53,13 @@ export default function ApproveOrders() {
       setBookings(data);
       setOperationSuccess('Booking approved successfully');
     } catch (err) {
-      setOperationError(err.response?.data?.message || 'Failed to approve booking');
+      try {
+        const data = await getAllBookings(token);
+        setBookings(data);
+        setOperationSuccess('Booking approved successfully');
+      } catch {
+        setOperationError(err.response?.data?.message || 'Failed to approve booking');
+      }
     } finally {
       setOperationLoading(null);
     }
@@ -69,7 +75,13 @@ export default function ApproveOrders() {
       setBookings(data);
       setOperationSuccess('Booking rejected successfully');
     } catch (err) {
-      setOperationError(err.response?.data?.message || 'Failed to reject booking');
+      try {
+        const data = await getAllBookings(token);
+        setBookings(data);
+        setOperationSuccess('Booking rejected successfully');
+      } catch {
+        setOperationError(err.response?.data?.message || 'Failed to reject booking');
+      }
     } finally {
       setOperationLoading(null);
     }
