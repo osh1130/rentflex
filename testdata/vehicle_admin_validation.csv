@@ -1,0 +1,27 @@
+scenario,make,model,year,mileage,available_now,minimum_rent_period,maximum_rent_period,seats,price_per_day,image_url,expected_status,expected_detail
+Missing make,,Corolla,2022,12000,TRUE,1,30,5,50,https://img,422,Field required
+Missing model,Toyota,,2022,12000,TRUE,1,30,5,50,https://img,422,Field required
+Missing year,Toyota,Corolla,,12000,TRUE,1,30,5,50,https://img,422,Field required
+Missing mileage,Toyota,Corolla,2022,,TRUE,1,30,5,50,https://img,422,Field required
+Missing available_now,Toyota,Corolla,2022,12000,,1,30,5,50,https://img,422,Field required
+Missing minimum_rent_period,Toyota,Corolla,2022,12000,TRUE,,30,5,50,https://img,422,Field required
+Missing maximum_rent_period,Toyota,Corolla,2022,12000,TRUE,1,,5,50,https://img,422,Field required
+Missing seats,Toyota,Corolla,2022,12000,TRUE,1,30,,50,https://img,422,Field required
+Missing price_per_day,Toyota,Corolla,2022,12000,TRUE,1,30,5,,https://img,422,Field required
+Missing image_url,Toyota,Corolla,2022,12000,TRUE,1,30,5,50,,422,Field required
+,,,,,,,,,,,,
+Year not integer,Toyota,Corolla,abc,12000,TRUE,1,30,5,50,https://img,422,value is not a valid integer
+Mileage not integer,Toyota,Corolla,2022,ten,TRUE,1,30,5,50,https://img,422,value is not a valid integer
+Available_now not boolean,Toyota,Corolla,2022,12000,yes,1,30,5,50,https://img,422, value is not a valid boolean
+Seats not integer,Toyota,Corolla,2022,12000,TRUE,1,30,five,50,https://img,422,value is not a valid integer
+Price not float,Toyota,Corolla,2022,12000,TRUE,1,30,5,abc,https://img,422,value is not a valid float
+,,,,,,,,,,,,
+Year out of range,Toyota,Corolla,1800,12000,TRUE,1,30,5,50,https://img,422,year value is not in range
+Mileage negative,Toyota,Corolla,2022,-100,TRUE,1,30,5,50,https://img,422,mileage value is not in range
+Seats out of range,Toyota,Corolla,2022,12000,TRUE,1,30,0,50,https://img,422,seats value is not in range
+Price out of range,Toyota,Corolla,2022,12000,TRUE,1,30,5,-1,https://img,422,price value is not in range
+Invalid image_url,Toyota,Corolla,2022,12000,TRUE,1,30,5,50,invalid_url,422,Invalid image_url
+,,,,,,,,,,,,
+Min rent > Max rent,Toyota,Corolla,2022,12000,TRUE,20,10,5,50,https://img,422,maximum_rent_period must be >= minimum_rent_period
+Minimum rent not in range,Toyota,Corolla,2022,12000,TRUE,0,30,5,50,https://img,422,rental period must be 1~365
+Maximum rent not in range,Toyota,Corolla,2022,12000,TRUE,1,400,5,50,https://img,422,rental period must be 1~365

@@ -1,0 +1,9 @@
+scenario,type,email,name,password,expected_status,expected_detail
+valid_login_email,login,test@example.com,,password123!,200,
+valid_login_name,login,,Test User,password123!,200,
+wrong_password,login,test@example.com,,wrongpass,401,Incorrect password
+user_not_found,login,nonexist@example.com,,anyPass,401,User not found
+blocked_user,login,blocked@example.com,,password123!,403,User blocked
+invalid_login_email,login,invalidemail,,password123!,422,value is not a valid email address
+missing_identifier_field,login,,,password123!,422,Either email or name must be provided
+missing_password_field,login,test@example.com,,,422,Field required

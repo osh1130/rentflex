@@ -1,0 +1,7 @@
+scenario,type,email,name,password,expected_status,expected_detail
+valid_register,register,{{email}},{{name}},password123!,201,
+duplicate_register,register,test@example.com,Test User,password123!,400,Email already registered
+missing_email_register,register,,Test User1,password123!,422,email field required
+missing_password_register,register,test1@example.com,Test User2,,422,password field required
+short_password,register,test2@example.com,{{name}},123,422,password too short
+no_special_char,register,test3@example.com,{{name}},password,422,password without special_char

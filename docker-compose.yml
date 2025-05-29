@@ -37,6 +37,9 @@ services:
       MYSQL_PASSWORD: ${DB_PASSWORD}
     ports:
       - "3307:3306"  # 修改主机端口为3307，避免与本地MySQL冲突
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-pyourpassword"]
       interval: 5s

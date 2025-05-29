@@ -15,6 +15,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# 在应用启动时自动创建数据库表结构（如果不存在）
+# 注意：这种方法适合开发环境，生产环境建议使用Alembic管理数据库迁移
+# 数据填充通过docker-compose中的init.sql完成
 @app.on_event("startup")
 async def startup_event():
     async with engine.begin() as conn:

@@ -40,7 +40,7 @@ RentFlex is a modern car rental management system with a user-friendly interface
 
 ### Default Accounts
 
-The system comes with pre-configured accounts for testing:
+The system automatically initializes the database with sample data including:
 
 1. **Admin Account**
    - Email: admin@rentflex.com
@@ -49,6 +49,15 @@ The system comes with pre-configured accounts for testing:
 2. **Customer Account**
    - Email: customer@example.com
    - Password: admin123!
+
+3. **Sample Vehicles**
+   - Various car models with different pricing and availability
+   
+4. **Sample Bookings**
+   - Pre-existing bookings to demonstrate the system
+
+The database initialization happens automatically when you first start the containers using the SQL script in `backend/init.sql`.
+
 ---
 
 ## System Requirements

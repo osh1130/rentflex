@@ -1,0 +1,12 @@
+scenario,type,email,name,password,expected_status,expected_detail
+valid_register,register,{{email}},{{name}},password123!,201,
+duplicate_register,register,test@example.com,Test User,password123!,400,Email already registered
+missing_email_register,register,,Test User,password123!,422,email field required
+missing_password_register,register,test2@example.com,Test User,,422,password field required
+short_password,register,{{email}},{{name}},123,422,password too short
+no_special_char,register,{{email}},{{name}},password,422,password without special_char
+valid_login_email,login,test@example.com,,password123!,200,
+valid_login_name,login,,Test User,password123,200,
+wrong_password,login,test@example.com,,wrongpass,401,Incorrect password
+user_not_found,login,nonexist@example.com,,anyPass,401,User not found
+blocked_user,login,blocked@example.com,,password123!,403,User blocked
