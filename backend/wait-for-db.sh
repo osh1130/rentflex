@@ -1,35 +1,19 @@
-#!/bin/bash
+#!/bin/sh
+# wait-for-db.sh
+
 set -e
 
-host="${DB_HOST:-mysql}"
-port="${DB_PORT:-3306}"
-user="${DB_USER}"
-password="${DB_PASSWORD}"
+host="$DB_HOST"
+port="$DB_PORT"
+user="$DB_USER"
+password="$DB_PASSWORD"
 
->&2 echo "Waiting for MySQL at $host:$port..."
-
-# 使用Python检查MySQL连接
-until python -c "
-import sys
-import time
-import mysql.connector
-try:
-    conn = mysql.connector.connect(
-        host='$host',
-        port=$port,
-        user='$user',
-        password='$password',
-        connection_timeout=5
-    )
-    conn.close()
-    sys.exit(0)
-except Exception as e:
-    print(f'MySQL is unavailable - {str(e)}', file=sys.stderr)
-    sys.exit(1)
-" > /dev/null 2>&1; do
-  >&2 echo "MySQL is unavailable - sleeping"
+echo "等待MySQL数据库就绪..."
+until mysqladmin ping -h"$host" -P"$port" -u"$user" -p"$password" --silent; do
+  echo "MySQL尚未就绪 - 等待..."
   sleep 2
 done
 
->&2 echo "MySQL is up - executing command"
+echo "MySQL数据库已准备就绪！"
+echo "执行命令: $@"
 exec "$@" 

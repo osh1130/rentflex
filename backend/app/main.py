@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, Base
 from app.routers import vehicles, auth ,booking, admin_booking, admin_vehicles
+import asyncio
 
 
 app = FastAPI()
@@ -20,13 +21,19 @@ app.add_middleware(
 # 数据填充通过docker-compose中的init.sql完成
 @app.on_event("startup")
 async def startup_event():
+    print("创建数据库表结构...")
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    print("数据库表结构创建完成！")
+    
+    # 等待几秒钟确保MySQL容器能够执行初始化脚本
+    await asyncio.sleep(3)
+    print("应用启动完成，可以接受请求")
 
-app.include_router(auth.router, prefix="/api")
-app.include_router(vehicles.router, prefix="/api")
-app.include_router(vehicles.router, prefix="/api")
-app.include_router(admin_vehicles.router, prefix="/api")
-app.include_router(booking.router, prefix="/api")
-app.include_router(admin_booking.router, prefix="/api")
+# 包含各个路由模块
+app.include_router(auth.router, prefix="/api", tags=["auth"])
+app.include_router(vehicles.router, prefix="/api", tags=["vehicles"])
+app.include_router(booking.router, prefix="/api", tags=["booking"])
+app.include_router(admin_booking.router, prefix="/api", tags=["admin"])
+app.include_router(admin_vehicles.router, prefix="/api", tags=["admin"])
 
