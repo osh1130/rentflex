@@ -79,35 +79,46 @@ The database initialization happens automatically when you first start the conta
     cd rentflex
     ```
 
-2. **Create environment variable files:**
-
-    In the project root, create a `.env` file:
-    ```
-    DB_USER=rentflex
-    DB_PASSWORD=yourpassword
-    DB_NAME=rentflex
-    ```
-
-    In the `backend` directory, create a `.env.dev` file:
-    ```
-    DB_HOST=mysql
-    DB_PORT=3306
-    DB_USER=rentflex
-    DB_PASSWORD=yourpassword
-    DB_NAME=rentflex
-    ENV=dev
-    ```
-
-3. **Build and start the containers:**
+2. **Build and start the containers:**
     ```bash
     docker-compose up --build
     ```
 
-4. **Access the application:**
+   > **Note**: All necessary environment configurations are already set up in the repository. The database credentials are pre-configured with username `rentflex` and password `vivizhao`.
+
+3. **Access the application:**
     - Frontend: http://localhost:3000
     - Backend API: http://localhost:8000/api
     - API Documentation: http://localhost:8000/docs (Swagger UI with detailed API information)
 
+### Testing with Different Database Environment
+
+The system supports switching between development and test databases:
+
+1. **Use the test database**:
+   Edit `docker-compose.yml` to ensure the backend connects to the test database (this is the default configuration).
+
+2. **Use the development database**:
+   If you want to switch back to the development database, edit `docker-compose.yml` and change the backend service configuration:
+   ```yaml
+   backend:
+     # ...
+     depends_on:
+       - mysql
+     environment:
+       DB_HOST: mysql
+       DB_PORT: 3306
+       DB_USER: rentflex
+       DB_PASSWORD: vivizhao
+       DB_NAME: rentflex
+       ENV: dev
+   ```
+
+3. **Restart the backend service**:
+   ```bash
+   docker-compose stop backend
+   docker-compose up -d backend
+   ```
 
 ---
 
@@ -138,7 +149,7 @@ The database initialization happens automatically when you first start the conta
     DB_HOST=localhost
     DB_PORT=3306
     DB_USER=rentflex
-    DB_PASSWORD=yourpassword
+    DB_PASSWORD=vivizhao
     DB_NAME=rentflex
     ENV=dev
     ```
@@ -164,8 +175,9 @@ The database initialization happens automatically when you first start the conta
     pnpm install
     ```
 
-4. Create a `.env` file if needed:
+4. Create a `.env` file:
     ```
+    # Frontend API configuration - point to your running backend
     VITE_API_URL=http://localhost:8000/api
     ```
 
@@ -264,6 +276,7 @@ The database initialization happens automatically when you first start the conta
 - No password reset function.
 - Payment processing is not implemented.
 - Admin interface lacks full data validation.
+- If you need to use your own database credentials, edit the `docker-compose.yml` file and replace `vivizhao` with your preferred password.
 
 ---
 
